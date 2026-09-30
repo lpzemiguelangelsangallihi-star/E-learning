@@ -15,7 +15,8 @@ return new class extends Migration
             $table->integer('id', true);
             $table->integer('rol_id');
             $table->string('nombre', 100);
-            $table->string('apellido', 100);
+            $table->string('apellido_paterno', 100);
+            $table->string('apellido_materno', 100);
             $table->string('correo', 150);
             $table->string('contrasena', 255);
             $table->string('foto_perfil', 255)->nullable();
