@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -13,17 +13,25 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens;
-
     use HasFactory;
-
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
 
+    /**
+     * Tu tabla usa nombres personalizados para timestamps.
+     */
+    public const CREATED_AT = 'creado_en';
+    public const UPDATED_AT = 'actualizado_en';
+
     protected $fillable = [
-        'name',
+        'rol_id',
+        'nombre',
+        'apellido_paterno',
+        'apellido_materno',
         'email',
         'password',
+        'estado',
     ];
 
     protected $hidden = [
@@ -43,5 +51,23 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Rol del usuario.
+     */
+    public function rol(): BelongsTo
+    {
+        return $this->belongsTo(Rol::class, 'rol_id');
+    }
+
+    /**
+     * Nombre completo para mostrar en la interfaz.
+     */
+    public function getNombreCompletoAttribute(): string
+    {
+        return trim(
+            "{$this->nombre} {$this->apellido_paterno} {$this->apellido_materno}"
+        );
     }
 }

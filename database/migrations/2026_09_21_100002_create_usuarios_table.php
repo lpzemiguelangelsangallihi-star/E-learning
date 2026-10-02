@@ -17,16 +17,21 @@ return new class extends Migration
             $table->string('nombre', 100);
             $table->string('apellido_paterno', 100);
             $table->string('apellido_materno', 100);
-            $table->string('correo', 150);
-            $table->string('contrasena', 255);
-            $table->string('foto_perfil', 255)->nullable();
+            $table->string('email', 150);
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password', 255);
+            $table->rememberToken();
+            $table->string('profile_photo_path', 2048)->nullable();
+            $table->foreignId('current_team_id')->nullable();
             $table->enum('estado', ['activo', 'inactivo'])->default('activo');
             $table->timestamp('creado_en')->useCurrent();
             $table->timestamp('actualizado_en')->useCurrent()->useCurrentOnUpdate();
-            $table->unique('correo', 'correo');
+            $table->unique('email', 'email');
+
         });
     }
 
+    
     /**
      * Reverse the migrations.
      */
