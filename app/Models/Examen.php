@@ -39,7 +39,7 @@ class Examen extends Model
 
     public function profesor(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'profesor_id');
+        return $this->belongsTo(User::class, 'profesor_id');
     }
 
     public function preguntas(): HasMany
