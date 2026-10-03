@@ -5,51 +5,77 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class UsersSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // [rol, nombre, apellido paterno, apellido materno, email]
         $users = [
-            ['administrador', 'Admin', 'Sistema', 'Demo', 'admin@elearning.test'],
+            [
+                'rol' => 'administrador',
+                'nombre' => 'Admin',
+                'apellido_paterno' => 'Sistema',
+                'apellido_materno' => 'Demo',
+                'email' => 'admin@elearning.test',
+            ],
 
-            // Matemáticas
-            ['profesor', 'Peter', 'Mendoza', 'Parker', 'peterparker15356@gmail.com'],
-            ['profesor', 'Lucía', 'Fernández', 'Quispe', 'prof.mat2@elearning.test'],
-            ['estudiante', 'Ana', 'Morales', 'Vargas', 'est.mat1@elearning.test'],
-            ['estudiante', 'Israel', 'Choque', 'Carrillo', 'isra.ch0018@gmail.com'],
-            ['estudiante', 'María', 'Herrera', 'Choque', 'est.mat3@elearning.test'],
+            [
+                'rol' => 'profesor',
+                'nombre' => 'Carlos',
+                'apellido_paterno' => 'Mendoza',
+                'apellido_materno' => 'Quispe',
+                'email' => 'profesor@elearning.test',
+            ],
 
-            // Física
-            ['profesor', 'Roberto', 'Gutiérrez', 'Alanoca', 'prof.fis1@elearning.test'],
-            ['profesor', 'Miguel', 'Sangalli', 'Hilari', 'mickysangalli@gmail.com'],
-            ['estudiante', 'Israel', 'Choque', 'Carrillo', 'isra.ch0018@gmail.com'],
-            ['estudiante', 'Sofía', 'Paredes', 'Condori', 'est.fis2@elearning.test'],
-            ['estudiante', 'Luis', 'Cárdenas', 'Ticona', 'est.fis3@elearning.test'],
-
-            // Química
-            ['profesor', 'Marcela', 'Ortiz', 'Copa', 'prof.qui1@elearning.test'],
-            ['profesor', 'Oscar', 'Savedra', 'Zambrana', 'zambranasaavedraoscar@gmail.com'],
-            ['estudiante', 'Valeria', 'Rojas', 'Huanca', 'est.qui1@elearning.test'],
-            ['estudiante', 'Andrés', 'Quispe', 'Nina', 'est.qui2@elearning.test'],
-            ['estudiante','Israel', 'Choque', 'Carrillo', 'isra.ch0018@gmail.com'],
+            [
+                'rol' => 'estudiante',
+                'nombre' => 'Juan',
+                'apellido_paterno' => 'Pérez',
+                'apellido_materno' => 'Mamani',
+                'email' => 'estudiante@elearning.test',
+            ],
         ];
 
-        foreach ($users as [$rol, $nombre, $paterno, $materno, $email]) {
+
+        foreach ($users as $user) {
+
+            $rolId = DB::table('roles')
+                ->where('nombre', $user['rol'])
+                ->value('id');
+
+
+            if (!$rolId) {
+                throw new RuntimeException(
+                    "No existe el rol {$user['rol']}."
+                );
+            }
+
+
             DB::table('users')->updateOrInsert(
-                ['email' => $email],
                 [
-                    'rol_id' => DB::table('roles')->where('nombre', $rol)->value('id'),
-                    'nombre' => $nombre,
-                    'apellido_paterno' => $paterno,
-                    'apellido_materno' => $materno,
-                    'password' => Hash::make('password'),
-                    'email_verified_at' => now(),
-                    'estado' => 'activo',
+                    'email' => $user['email'],
+                ],
+                [
+                    'rol_id' => $rolId,
+
+                    'nombre' =>
+                        $user['nombre'],
+
+                    'apellido_paterno' =>
+                        $user['apellido_paterno'],
+
+                    'apellido_materno' =>
+                        $user['apellido_materno'],
+
+                    'password' =>
+                        Hash::make('password'),
+
+                    'email_verified_at' =>
+                        now(),
+
+                    'estado' =>
+                        'activo',
                 ]
             );
         }

@@ -7,25 +7,38 @@ use Illuminate\Support\Facades\DB;
 
 class MateriasSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $materias = [
-            'Matemáticas' => 'Funciones, trigonometría, geometría analítica, cálculo y estadística',
-            'Física' => 'Mecánica, electricidad, magnetismo, ondas y óptica',
-            'Química' => 'Estructura de la materia, reacciones y química orgánica',
+            ['nombre' => 'Matemáticas',
+               'descripcion' => 'Funciones, trigonometría, geometría analítica, cálculo y estadística',
+            ],
+
+            [
+                'nombre' => 'Física',
+                'descripcion' =>
+                    'Mecánica, electricidad, magnetismo, ondas y óptica',
+            ],
+
+            [
+                'nombre' => 'Química',
+                'descripcion' =>
+                    'Estructura de la materia, reacciones y química orgánica',
+            ],
         ];
 
-        foreach ($materias as $nombre => $descripcion) {
+        foreach ($materias as $materia) {
+
             DB::table('materias')->updateOrInsert(
-                ['nombre' => $nombre],
                 [
-                    'descripcion' => $descripcion,
+                    'nombre' => $materia['nombre'],
+                ],
+                [
+                    'descripcion' => $materia['descripcion'],
                     'estado' => 'activo',
                 ]
             );
+
         }
     }
 }

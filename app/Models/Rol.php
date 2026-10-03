@@ -10,7 +10,6 @@ class Rol extends Model
     protected $table = 'roles';
 
     public const CREATED_AT = 'creado_en';
-
     public const UPDATED_AT = null;
 
     protected $fillable = [
@@ -20,6 +19,9 @@ class Rol extends Model
 
     public function usuarios(): HasMany
     {
-        return $this->hasMany(Usuario::class, 'rol_id');
+        return $this->hasMany(
+            User::class,
+            'rol_id'
+        );
     }
 }
