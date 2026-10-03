@@ -17,19 +17,19 @@ class ModulosSeeder extends Seeder
                 'Funciones', 'Trigonometría', 'Geometría analítica', 'Exponenciales y logaritmos',
             ],
             'Matemáticas 6to de secundaria' => [
-                'Límites y derivadas', 'Estadística y probabilidad', 'Cónicas', 'Progresiones',
+                'Límites y derivadas', 'Estadística y probabilidad',
             ],
             'Física 5to de secundaria' => [
-                'Cinemática', 'Dinámica', 'Trabajo y energía', 'Fluidos',
+                'Cinemática', 'Dinámica', 'Trabajo y energía',
             ],
             'Física 6to de secundaria' => [
-                'Electricidad', 'Magnetismo', 'Ondas y sonido', 'Óptica',
+                'Electricidad', 'Magnetismo', 'Ondas y sonido',
             ],
             'Química 5to de secundaria' => [
-                'Estructura atómica y tabla periódica', 'Enlace químico', 'Nomenclatura inorgánica', 'Reacciones y estequiometría',
+                'Estructura atómica y tabla periódica', 'Nomenclatura inorgánica',
             ],
             'Química 6to de secundaria' => [
-                'Soluciones', 'Ácidos y bases', 'Química orgánica', 'Equilibrio y electroquímica',
+                'Ácidos y Gases', 'Química orgánica', 'Termodinamica', 'Termoquimica',
             ],
         ];
 
