@@ -32,11 +32,13 @@ class Curso extends Model
     ];
 
     protected function casts(): array
-    {
-        return [
-            'precio' => 'decimal:2',
-        ];
-    }
+{
+    return [
+        'precio' => 'decimal:2',
+        'creado_en' => 'datetime',
+        'actualizado_en' => 'datetime',
+    ];
+}
 
     public function categoria(): BelongsTo
     {

@@ -1,12 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
-
-use App\Http\Controllers\Student\CourseController;
-
+use App\Http\Controllers\Admin\CourseController as AdminCourseController;
+//use App\Http\Controllers\Student\CourseController as StudentCourseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,7 +57,7 @@ Route::middleware([
 |--------------------------------------------------------------------------
 | ESTUDIANTE
 |--------------------------------------------------------------------------
-*/
+
 
 Route::middleware([
     'auth:sanctum',
@@ -73,10 +71,10 @@ Route::middleware([
 
         Route::get(
             '/mis-cursos',
-            [CourseController::class, 'index']
+            [StudentCourseController::class, 'index']
         )->name('courses');
 
-    });
+    });*/
 
 
 
@@ -139,6 +137,29 @@ Route::middleware([
             '/usuarios/{user}',
             [UserController::class, 'destroy']
         )->name('users.destroy');
+
+        /*
+|--------------------------------------------------------------------------
+| Cursos
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/cursos',
+    [AdminCourseController::class, 'index']
+)->name('courses.index');
+
+
+Route::patch(
+    '/cursos/{curso}/visibilidad',
+    [AdminCourseController::class, 'toggleVisibility']
+)->name('courses.toggle-visibility');
+
+
+Route::delete(
+    '/cursos/{curso}',
+    [AdminCourseController::class, 'destroy']
+)->name('courses.destroy');
 
     });
 

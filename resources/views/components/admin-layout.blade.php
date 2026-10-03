@@ -234,62 +234,31 @@
 
                 {{-- Cursos --}}
                 <a
-                    href="#"
+                    href="{{ route('admin.courses.index') }}"
                     class="
-                        mb-1 flex
-                        items-center gap-3
-                        rounded-lg
-                        px-3 py-2.5
-                        text-sm
-                        font-medium
-                        text-blue-50
+                        mb-1 flex items-center gap-3
+                        rounded-lg px-3 py-2.5
+                        text-sm font-medium
                         transition
-                        hover:bg-white/10
+
+                        {{ request()->routeIs('admin.courses.*')
+                            ? 'bg-[#2563EB] text-white'
+                            : 'text-blue-50 hover:bg-white/10'
+                        }}
                     "
                 >
-
                     <i
                         class="
                             fa-solid
                             fa-book-open
-                            w-5
-                            text-center
+                            w-5 text-center
                         "
                     ></i>
 
                     Cursos
+</a>
 
-                </a>
 
-
-                {{-- Materias --}}
-                <a
-                    href="#"
-                    class="
-                        mb-1 flex
-                        items-center gap-3
-                        rounded-lg
-                        px-3 py-2.5
-                        text-sm
-                        font-medium
-                        text-blue-50
-                        transition
-                        hover:bg-white/10
-                    "
-                >
-
-                    <i
-                        class="
-                            fa-solid
-                            fa-flask
-                            w-5
-                            text-center
-                        "
-                    ></i>
-
-                    Materias
-
-                </a>
 
 
                 {{-- Estadísticas --}}
