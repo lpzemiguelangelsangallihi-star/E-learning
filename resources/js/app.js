@@ -127,3 +127,92 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeLoadingForms();
 
 });
+const initializeAdminSidebar = () => {
+
+    const sidebar =
+        document.querySelector(
+            '[data-admin-sidebar]'
+        );
+
+    const overlay =
+        document.querySelector(
+            '[data-admin-sidebar-overlay]'
+        );
+
+    const toggles =
+        document.querySelectorAll(
+            '[data-admin-sidebar-toggle]'
+        );
+
+
+    if (!sidebar || !overlay) {
+        return;
+    }
+
+
+    const openSidebar = () => {
+
+        sidebar.classList.remove(
+            '-translate-x-full'
+        );
+
+        overlay.classList.remove(
+            'hidden'
+        );
+
+        document.body.classList.add(
+            'overflow-hidden'
+        );
+    };
+
+
+    const closeSidebar = () => {
+
+        sidebar.classList.add(
+            '-translate-x-full'
+        );
+
+        overlay.classList.add(
+            'hidden'
+        );
+
+        document.body.classList.remove(
+            'overflow-hidden'
+        );
+    };
+
+
+    toggles.forEach((button) => {
+
+        button.addEventListener(
+            'click',
+            openSidebar
+        );
+
+    });
+
+
+    overlay.addEventListener(
+        'click',
+        closeSidebar
+    );
+
+
+    document.addEventListener(
+        'keydown',
+        (event) => {
+
+            if (event.key === 'Escape') {
+                closeSidebar();
+            }
+
+        }
+    );
+
+};
+
+
+document.addEventListener(
+    'DOMContentLoaded',
+    initializeAdminSidebar
+);
