@@ -15,7 +15,7 @@ class MateriasSeeder extends Seeder
         $materias = [
             'Matemáticas' => 'Funciones, trigonometría, geometría analítica, cálculo y estadística',
             'Física' => 'Mecánica, electricidad, magnetismo, ondas y óptica',
-            'Química' => 'Estructura de la materia, reacciones, soluciones y química orgánica',
+            'Química' => 'Estructura de la materia, reacciones y química orgánica',
         ];
 
         foreach ($materias as $nombre => $descripcion) {
