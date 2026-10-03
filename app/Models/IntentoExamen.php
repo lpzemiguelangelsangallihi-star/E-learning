@@ -38,7 +38,7 @@ class IntentoExamen extends Model
 
     public function estudiante(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'estudiante_id');
+        return $this->belongsTo(User::class, 'estudiante_id');
     }
 
     public function respuestas(): HasMany
