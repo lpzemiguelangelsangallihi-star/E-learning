@@ -22,7 +22,7 @@ class Insignia extends Model
 
     public function usuarios(): BelongsToMany
     {
-        return $this->belongsToMany(Usuario::class, 'usuario_insignias', 'insignia_id', 'estudiante_id')
+        return $this->belongsToMany(User::class, 'usuario_insignias', 'insignia_id', 'estudiante_id')
             ->withPivot('fecha_obtencion');
     }
 }
