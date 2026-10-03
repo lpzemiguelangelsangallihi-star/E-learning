@@ -33,12 +33,12 @@ class Calificacion extends Model
 
     public function estudiante(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'estudiante_id');
+        return $this->belongsTo(User::class, 'estudiante_id');
     }
 
     public function profesor(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'profesor_id');
+        return $this->belongsTo(User::class, 'profesor_id');
     }
 
     public function curso(): BelongsTo
