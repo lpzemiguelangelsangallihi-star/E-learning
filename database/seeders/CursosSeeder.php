@@ -13,21 +13,21 @@ class CursosSeeder extends Seeder
     public function run(): void
     {
         $cursos = [
-            ['Matemáticas 5to de secundaria', 'Matemáticas', 'prof.mat1@elearning.test', 'intermedio',
+            ['Matemáticas 5to de secundaria', 'Matemáticas', 'prof.mat1@elearning.test', 'basico',
                 'Funciones, trigonometría, geometría analítica y logaritmos.',
                 'Resolver problemas con funciones, razones trigonométricas, rectas, circunferencias y logaritmos.'],
-            ['Matemáticas 6to de secundaria', 'Matemáticas', 'prof.mat2@elearning.test', 'avanzado',
+            ['Matemáticas 6to de secundaria', 'Matemáticas', 'prof.mat2@elearning.test', 'intermedio, avanzado',
                 'Límites, derivadas, estadística, cónicas y progresiones.',
                 'Calcular límites y derivadas básicas, aplicar probabilidad y reconocer cónicas y progresiones.'],
 
-            ['Física 5to de secundaria', 'Física', 'prof.fis1@elearning.test', 'intermedio',
+            ['Física 5to de secundaria', 'Física', 'prof.fis1@elearning.test', 'basico',
                 'Cinemática, dinámica, trabajo y energía, y fluidos.',
                 'Describir el movimiento, aplicar las leyes de Newton y resolver problemas de energía y fluidos.'],
-            ['Física 6to de secundaria', 'Física', 'prof.fis2@elearning.test', 'avanzado',
+            ['Física 6to de secundaria', 'Física', 'prof.fis2@elearning.test', 'intermedio',
                 'Electricidad, magnetismo, ondas y óptica.',
                 'Analizar circuitos eléctricos, campos magnéticos, ondas y fenómenos ópticos.'],
 
-            ['Química 5to de secundaria', 'Química', 'prof.qui1@elearning.test', 'intermedio',
+            ['Química 5to de secundaria', 'Química', 'prof.qui1@elearning.test', 'basico',
                 'Estructura atómica, enlace químico, nomenclatura y estequiometría.',
                 'Interpretar la tabla periódica, nombrar compuestos inorgánicos y balancear reacciones.'],
             ['Química 6to de secundaria', 'Química', 'prof.qui2@elearning.test', 'avanzado',
