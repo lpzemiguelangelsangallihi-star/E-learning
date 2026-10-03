@@ -9,13 +9,16 @@ class Rol extends Model
 {
     protected $table = 'roles';
 
-    public const CREATED_AT = 'creado_en';
+
+    public const CREATED_AT = null;
     public const UPDATED_AT = null;
+
 
     protected $fillable = [
         'nombre',
         'descripcion',
     ];
+
 
     public function usuarios(): HasMany
     {

@@ -11,27 +11,34 @@ class DashboardController extends Controller
     public function index()
     {
         $stats = [
+
             'users' =>
                 User::count(),
 
             'students' =>
                 User::whereHas(
                     'rol',
-                    fn ($query) =>
+                    function ($query) {
+
                         $query->where(
                             'nombre',
                             'estudiante'
-                        )
+                        );
+
+                    }
                 )->count(),
 
             'teachers' =>
                 User::whereHas(
                     'rol',
-                    fn ($query) =>
+                    function ($query) {
+
                         $query->where(
                             'nombre',
                             'profesor'
-                        )
+                        );
+
+                    }
                 )->count(),
 
             'courses' =>
@@ -46,7 +53,7 @@ class DashboardController extends Controller
 
 
         $recentUsers = User::with('rol')
-            ->latest('creado_en')
+            ->orderByDesc('creado_en')
             ->take(5)
             ->get();
 
@@ -76,12 +83,12 @@ class DashboardController extends Controller
 
                 'p.nombre as profesor_nombre',
 
-                'p.apellido_paterno
-                    as profesor_apellido',
+                'p.apellido_paterno as profesor_apellido',
             ])
 
             ->orderByDesc('c.id')
             ->limit(5)
+
             ->get();
 
 
