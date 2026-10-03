@@ -50,7 +50,7 @@ class Curso extends Model
 
     public function profesor(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'profesor_id');
+        return $this->belongsTo(User:: class, 'profesor_id');
     }
 
     public function modulos(): HasMany
@@ -75,7 +75,7 @@ class Curso extends Model
 
     public function estudiantes(): BelongsToMany
     {
-        return $this->belongsToMany(Usuario::class, 'inscripciones', 'curso_id', 'estudiante_id')
+        return $this->belongsToMany(User::class, 'inscripciones', 'curso_id', 'estudiante_id')
             ->withPivot('estado', 'fecha_inscripcion');
     }
 
