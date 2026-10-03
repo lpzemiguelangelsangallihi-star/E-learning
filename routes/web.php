@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Professor\DashboardController as ProfessorDashboardController;
+use App\Http\Controllers\Professor\CourseController as ProfessorCourseController;
 
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 
@@ -30,7 +32,6 @@ Route::get('/', function () {
 | Según el rol, enviamos al usuario a su módulo.
 |
 */
-
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -45,19 +46,11 @@ Route::middleware([
             'administrador' =>
                 redirect()->route('admin.dashboard'),
 
-            /*
-             * Profesor todavía no está terminado.
-             * Lo dejamos temporalmente en una vista simple.
-             */
             'profesor' =>
-                view('professor.dashboard'),
+                redirect()->route('professor.dashboard'),
 
-            /*
-             * Estudiante todavía no tiene aquí
-             * un controlador obligatorio.
-             */
             'estudiante' =>
-                view('student.dashboard'),
+                redirect()->route('student.dashboard'),
 
             default =>
                 abort(403),
@@ -247,10 +240,44 @@ Route::middleware([
 
         Route::get(
             '/dashboard',
-            function () {
-                return view('professor.dashboard');
-            }
+            [ProfessorDashboardController::class, 'index']
         )->name('dashboard');
+
+
+        Route::get(
+            '/cursos',
+            [ProfessorCourseController::class, 'index']
+        )->name('courses.index');
+
+
+        Route::get(
+            '/cursos/crear',
+            [ProfessorCourseController::class, 'create']
+        )->name('courses.create');
+
+
+        Route::post(
+            '/cursos',
+            [ProfessorCourseController::class, 'store']
+        )->name('courses.store');
+
+
+        Route::get(
+            '/cursos/{curso}/editar',
+            [ProfessorCourseController::class, 'edit']
+        )->name('courses.edit');
+
+
+        Route::put(
+            '/cursos/{curso}',
+            [ProfessorCourseController::class, 'update']
+        )->name('courses.update');
+
+
+        Route::delete(
+            '/cursos/{curso}',
+            [ProfessorCourseController::class, 'destroy']
+        )->name('courses.destroy');
 
     });
 
@@ -262,12 +289,6 @@ Route::middleware([
 |
 | Lo dejamos mínimo por ahora.
 | Después retomaremos:
-|
-| - Dashboard
-| - Mis cursos
-| - Evaluaciones
-| - Mi progreso
-| - Recomendaciones
 |
 */
 
