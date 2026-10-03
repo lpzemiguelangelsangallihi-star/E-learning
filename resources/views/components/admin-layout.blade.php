@@ -261,34 +261,87 @@
 
 
 
-                {{-- Estadísticas --}}
                 <a
-                    href="#"
-                    class="
-                        mb-1 flex
-                        items-center gap-3
-                        rounded-lg
-                        px-3 py-2.5
-                        text-sm
-                        font-medium
-                        text-blue-50
-                        transition
-                        hover:bg-white/10
-                    "
-                >
+    href="{{ route('admin.statistics.index') }}"
+    class="
+        mb-1 flex items-center gap-3
+        rounded-lg px-3 py-2.5
+        text-sm font-medium
+        transition
 
-                    <i
-                        class="
-                            fa-solid
-                            fa-chart-column
-                            w-5
-                            text-center
-                        "
-                    ></i>
+        {{ request()->routeIs('admin.statistics.*')
+            ? 'bg-[#2563EB] text-white'
+            : 'text-blue-50 hover:bg-white/10'
+        }}
+    "
+>
 
-                    Estadísticas
+    <i
+        class="
+            fa-solid
+            fa-chart-column
+            w-5 text-center
+        "
+    ></i>
 
-                </a>
+    Estadísticas
+
+</a>
+
+<a
+    href="{{ route('admin.settings.index') }}"
+    class="
+        mb-1 flex items-center gap-3
+        rounded-lg px-3 py-2.5
+        text-sm font-medium
+        transition
+
+        {{ request()->routeIs('admin.settings.*')
+            ? 'bg-[#2563EB] text-white'
+            : 'text-blue-50 hover:bg-white/10'
+        }}
+    "
+>
+
+    <i
+        class="
+            fa-solid
+            fa-gear
+            w-5 text-center
+        "
+    ></i>
+
+    Configuración
+
+</a>
+
+
+<a
+    href="{{ route('admin.profile.edit') }}"
+    class="
+        mb-1 flex items-center gap-3
+        rounded-lg px-3 py-2.5
+        text-sm font-medium
+        transition
+
+        {{ request()->routeIs('admin.profile.*')
+            ? 'bg-[#2563EB] text-white'
+            : 'text-blue-50 hover:bg-white/10'
+        }}
+    "
+>
+
+    <i
+        class="
+            fa-solid
+            fa-user
+            w-5 text-center
+        "
+    ></i>
+
+    Mi perfil
+
+</a>
 
             </nav>
 

@@ -1,10 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\Admin\ProfileController;
+
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
-//use App\Http\Controllers\Student\CourseController as StudentCourseController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -19,11 +23,11 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Dashboard general
+| Dashboard general después del login
 |--------------------------------------------------------------------------
 |
-| Jetstream redirige aquí después del login.
-| Dependiendo del rol enviamos al usuario a su panel.
+| Jetstream redirige aquí.
+| Según el rol, enviamos al usuario a su módulo.
 |
 */
 
@@ -31,53 +35,43 @@ Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
-])->get('/dashboard', function () {
+])
+    ->get('/dashboard', function () {
 
-    $user = auth()->user();
+        $user = auth()->user();
 
-    return match ($user->rol?->nombre) {
+        return match ($user->rol?->nombre) {
 
-        'administrador' =>
-            redirect()->route('admin.dashboard'),
+            'administrador' =>
+                redirect()->route('admin.dashboard'),
 
-        'profesor' =>
-            redirect()->route('professor.dashboard'),
+            /*
+             * Profesor todavía no está terminado.
+             * Lo dejamos temporalmente en una vista simple.
+             */
+            'profesor' =>
+                view('professor.dashboard'),
 
-        'estudiante' =>
-            view('student.dashboard'),
+            /*
+             * Estudiante todavía no tiene aquí
+             * un controlador obligatorio.
+             */
+            'estudiante' =>
+                view('student.dashboard'),
 
-        default =>
-            abort(403),
-    };
+            default =>
+                abort(403),
+        };
 
-})->name('dashboard');
+    })
+    ->name('dashboard');
 
 
 /*
 |--------------------------------------------------------------------------
-| ESTUDIANTE
+| ADMINISTRADOR
 |--------------------------------------------------------------------------
-
-
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-    'role:estudiante',
-])
-    ->prefix('estudiante')
-    ->name('student.')
-    ->group(function () {
-
-        Route::get(
-            '/mis-cursos',
-            [StudentCourseController::class, 'index']
-        )->name('courses');
-
-    });*/
-
-
-
+*/
 
 Route::middleware([
     'auth:sanctum',
@@ -89,13 +83,23 @@ Route::middleware([
     ->name('admin.')
     ->group(function () {
 
-    
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/dashboard',
             [DashboardController::class, 'index']
         )->name('dashboard');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Usuarios
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/usuarios',
@@ -138,33 +142,98 @@ Route::middleware([
             [UserController::class, 'destroy']
         )->name('users.destroy');
 
+
         /*
-|--------------------------------------------------------------------------
-| Cursos
-|--------------------------------------------------------------------------
-*/
+        |--------------------------------------------------------------------------
+        | Cursos
+        |--------------------------------------------------------------------------
+        */
 
-Route::get(
-    '/cursos',
-    [AdminCourseController::class, 'index']
-)->name('courses.index');
-
-
-Route::patch(
-    '/cursos/{curso}/visibilidad',
-    [AdminCourseController::class, 'toggleVisibility']
-)->name('courses.toggle-visibility');
+        Route::get(
+            '/cursos',
+            [AdminCourseController::class, 'index']
+        )->name('courses.index');
 
 
-Route::delete(
-    '/cursos/{curso}',
-    [AdminCourseController::class, 'destroy']
-)->name('courses.destroy');
+        Route::patch(
+            '/cursos/{curso}/visibilidad',
+            [AdminCourseController::class, 'toggleVisibility']
+        )->name('courses.toggle-visibility');
+
+
+        Route::delete(
+            '/cursos/{curso}',
+            [AdminCourseController::class, 'destroy']
+        )->name('courses.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Estadísticas
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/estadisticas',
+            [StatisticsController::class, 'index']
+        )->name('statistics.index');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Perfil
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/perfil',
+            [ProfileController::class, 'edit']
+        )->name('profile.edit');
+
+
+        Route::put(
+            '/perfil',
+            [ProfileController::class, 'update']
+        )->name('profile.update');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Configuración
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/configuracion',
+            [ProfileController::class, 'settings']
+        )->name('settings.index');
+
+
+        Route::put(
+            '/configuracion/password',
+            [ProfileController::class, 'updatePassword']
+        )->name('settings.password');
 
     });
 
 
-
+/*
+|--------------------------------------------------------------------------
+| PROFESOR
+|--------------------------------------------------------------------------
+|
+| Por ahora dejamos solo una ruta básica.
+| Después construiremos:
+|
+| - Dashboard
+| - Mis cursos
+| - Aulas
+| - Contenido
+| - Evaluaciones
+| - Resultados
+| - Estadísticas
+|
+*/
 
 Route::middleware([
     'auth:sanctum',
@@ -176,10 +245,47 @@ Route::middleware([
     ->name('professor.')
     ->group(function () {
 
-        Route::get('/dashboard', function () {
+        Route::get(
+            '/dashboard',
+            function () {
+                return view('professor.dashboard');
+            }
+        )->name('dashboard');
 
-            return view('professor.dashboard');
+    });
 
-        })->name('dashboard');
+
+/*
+|--------------------------------------------------------------------------
+| ESTUDIANTE
+|--------------------------------------------------------------------------
+|
+| Lo dejamos mínimo por ahora.
+| Después retomaremos:
+|
+| - Dashboard
+| - Mis cursos
+| - Evaluaciones
+| - Mi progreso
+| - Recomendaciones
+|
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+    'role:estudiante',
+])
+    ->prefix('estudiante')
+    ->name('student.')
+    ->group(function () {
+
+        Route::get(
+            '/dashboard',
+            function () {
+                return view('student.dashboard');
+            }
+        )->name('dashboard');
 
     });
