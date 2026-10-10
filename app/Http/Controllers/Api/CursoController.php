@@ -18,17 +18,12 @@ class CursoController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'categoria_id' => ['sometimes', 'integer'],
             'materia_id' => ['sometimes', 'integer'],
             'profesor_id' => ['sometimes', 'integer'],
             'titulo' => ['sometimes', 'string'],
             'descripcion' => ['sometimes', 'string'],
             'objetivos' => ['sometimes', 'string'],
             'imagen' => ['sometimes', 'string'],
-            'nivel' => ['sometimes', 'nullable'],
-            'duracion' => ['sometimes', 'numeric'],
-            'tipo' => ['sometimes', 'string'],
-            'precio' => ['sometimes', 'numeric'],
             'estado' => ['sometimes', 'string'],
         ]);
 
@@ -52,10 +47,6 @@ class CursoController extends Controller
             'descripcion' => ['sometimes', 'string'],
             'objetivos' => ['sometimes', 'string'],
             'imagen' => ['sometimes', 'string'],
-            'nivel' => ['sometimes', 'nullable'],
-            'duracion' => ['sometimes', 'numeric'],
-            'tipo' => ['sometimes', 'string'],
-            'precio' => ['sometimes', 'numeric'],
             'estado' => ['sometimes', 'string'],
         ]);
 

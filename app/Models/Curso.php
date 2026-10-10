@@ -17,17 +17,12 @@ class Curso extends Model
 
 
     protected $fillable = [
-        'categoria_id',
         'materia_id',
         'profesor_id',
         'titulo',
         'descripcion',
         'objetivos',
         'imagen',
-        'nivel',
-        'duracion',
-        'tipo',
-        'precio',
         'estado',
     ];
 
@@ -35,11 +30,8 @@ class Curso extends Model
     protected function casts(): array
     {
         return [
-            'categoria_id' => 'integer',
             'materia_id' => 'integer',
             'profesor_id' => 'integer',
-            'duracion' => 'integer',
-            'precio' => 'decimal:2',
             'creado_en' => 'datetime',
             'actualizado_en' => 'datetime',
         ];
