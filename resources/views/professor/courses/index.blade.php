@@ -441,6 +441,44 @@
                         "
                     >
 
+                        <div class="flex items-center gap-4">
+
+                        <a
+                            href="{{ route('professor.courses.students', $curso) }}"
+                            class="
+                                inline-flex items-center gap-2
+                                text-sm font-semibold
+                                text-slate-600
+                                hover:text-[#2563EB]
+                            "
+                            title="Ver estudiantes"
+                        >
+                            <i class="fa-solid fa-users"></i>
+                            Estudiantes
+                        </a>
+
+                        <form
+                            method="POST"
+                            action="{{ route('professor.courses.toggle-status', $curso) }}"
+                        >
+                            @csrf
+                            @method('PATCH')
+
+                            <button
+                                type="submit"
+                                class="
+                                    inline-flex items-center gap-2
+                                    text-sm font-semibold
+                                    {{ $curso->estado === 'publicado'
+                                        ? 'text-yellow-600 hover:text-yellow-700'
+                                        : 'text-green-600 hover:text-green-700' }}
+                                "
+                            >
+                                <i class="fa-solid {{ $curso->estado === 'publicado' ? 'fa-eye-slash' : 'fa-eye' }}"></i>
+                                {{ $curso->estado === 'publicado' ? 'Ocultar' : 'Publicar' }}
+                            </button>
+                        </form>
+
                         <a
                             href="{{ route('professor.courses.edit', $curso) }}"
                             class="
@@ -454,6 +492,8 @@
 
                             Editar
                         </a>
+
+                        </div>
 
 
                         <form

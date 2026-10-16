@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Professor\DashboardController as ProfessorDashboardController;
 use App\Http\Controllers\Professor\CourseController as ProfessorCourseController;
+use App\Http\Controllers\Professor\StatisticsController as ProfessorStatisticsController;
 
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 
@@ -278,6 +279,24 @@ Route::middleware([
             '/cursos/{curso}',
             [ProfessorCourseController::class, 'destroy']
         )->name('courses.destroy');
+
+
+        Route::patch(
+            '/cursos/{curso}/estado',
+            [ProfessorCourseController::class, 'toggleStatus']
+        )->name('courses.toggle-status');
+
+
+        Route::get(
+            '/cursos/{curso}/estudiantes',
+            [ProfessorCourseController::class, 'students']
+        )->name('courses.students');
+
+
+        Route::get(
+            '/estadisticas',
+            [ProfessorStatisticsController::class, 'index']
+        )->name('statistics.index');
 
     });
 
