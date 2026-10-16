@@ -9,7 +9,6 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Professor\DashboardController as ProfessorDashboardController;
 use App\Http\Controllers\Professor\CourseController as ProfessorCourseController;
 use App\Http\Controllers\Professor\StatisticsController as ProfessorStatisticsController;
-
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 
 
