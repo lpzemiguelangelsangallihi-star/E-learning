@@ -23,10 +23,13 @@ class Curso extends Model
         'descripcion',
         'objetivos',
         'imagen',
+<<<<<<< HEAD
         'nivel',
         'duracion',
         'tipo',
         'precio',
+=======
+>>>>>>> d01924e12fe69647e775d4b6c8098de39255410a
         'estado',
     ];
 
@@ -36,8 +39,11 @@ class Curso extends Model
         return [
             'materia_id' => 'integer',
             'profesor_id' => 'integer',
+<<<<<<< HEAD
             'duracion' => 'integer',
             'precio' => 'decimal:2',
+=======
+>>>>>>> d01924e12fe69647e775d4b6c8098de39255410a
             'creado_en' => 'datetime',
             'actualizado_en' => 'datetime',
         ];

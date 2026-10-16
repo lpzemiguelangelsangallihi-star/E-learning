@@ -213,6 +213,7 @@
                     Mis cursos
 
                 </a>
+<<<<<<< HEAD
                 <a
                     href="{{ route('professor.statistics.index') }}"
                     class="
@@ -233,6 +234,8 @@
 
                     Estadísticas
                 </a>
+=======
+>>>>>>> d01924e12fe69647e775d4b6c8098de39255410a
 
             </nav>
 

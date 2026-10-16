@@ -385,6 +385,7 @@ class CourseController extends Controller
     }
 
 
+<<<<<<< HEAD
     /**
      * Publicar u ocultar un curso.
      * borrador/oculto -> publicado | publicado -> oculto
@@ -452,6 +453,8 @@ class CourseController extends Controller
     }
 
 
+=======
+>>>>>>> d01924e12fe69647e775d4b6c8098de39255410a
     private function authorizeCourse(
         Curso $curso
     ): void {

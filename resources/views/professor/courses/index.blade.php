@@ -441,6 +441,7 @@
                         "
                     >
 
+<<<<<<< HEAD
                         <div class="flex items-center gap-4">
 
                         <a
@@ -479,6 +480,8 @@
                             </button>
                         </form>
 
+=======
+>>>>>>> d01924e12fe69647e775d4b6c8098de39255410a
                         <a
                             href="{{ route('professor.courses.edit', $curso) }}"
                             class="
@@ -493,8 +496,11 @@
                             Editar
                         </a>
 
+<<<<<<< HEAD
                         </div>
 
+=======
+>>>>>>> d01924e12fe69647e775d4b6c8098de39255410a
 
                         <form
                             method="POST"
