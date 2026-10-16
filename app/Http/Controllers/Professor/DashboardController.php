@@ -45,13 +45,7 @@ class DashboardController extends Controller
         ->distinct()
         ->count('i.estudiante_id'),
 
-<<<<<<< HEAD
-    'evaluations' => DB::table('examenes')
-        ->where('profesor_id', $profesorId)
-        ->count(),
-=======
     'evaluations' => 0,
->>>>>>> d01924e12fe69647e775d4b6c8098de39255410a
 ];
 
 

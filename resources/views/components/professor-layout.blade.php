@@ -213,29 +213,6 @@
                     Mis cursos
 
                 </a>
-<<<<<<< HEAD
-                <a
-                    href="{{ route('professor.statistics.index') }}"
-                    class="
-                        mb-1 flex
-                        items-center gap-3
-                        rounded-lg
-                        px-3 py-2.5
-                        text-sm font-medium
-                        transition
-                        {{
-                            request()->routeIs('professor.statistics.*')
-                                ? 'bg-[#2563EB] text-white'
-                                : 'text-blue-50 hover:bg-white/10'
-                        }}
-                    "
-                >
-                    <i class="fa-solid fa-chart-column w-5 text-center"></i>
-
-                    Estadísticas
-                </a>
-=======
->>>>>>> d01924e12fe69647e775d4b6c8098de39255410a
 
             </nav>
 
