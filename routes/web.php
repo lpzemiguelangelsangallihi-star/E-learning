@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\StatisticsController;
@@ -40,7 +40,7 @@ Route::middleware([
 ])
     ->get('/dashboard', function () {
 
-        $user = auth()->user();
+        $user = Auth::user();
 
         return match ($user->rol?->nombre) {
 
@@ -83,10 +83,7 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::get(
-            '/dashboard',
-            [DashboardController::class, 'index']
-        )->name('dashboard');
+        Route::get('/dashboard',[DashboardController::class, 'index'])->name('dashboard');
 
 
         /*
@@ -95,46 +92,13 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::get(
-            '/usuarios',
-            [UserController::class, 'index']
-        )->name('users.index');
-
-
-        Route::get(
-            '/usuarios/crear',
-            [UserController::class, 'create']
-        )->name('users.create');
-
-
-        Route::post(
-            '/usuarios',
-            [UserController::class, 'store']
-        )->name('users.store');
-
-
-        Route::get(
-            '/usuarios/{user}/editar',
-            [UserController::class, 'edit']
-        )->name('users.edit');
-
-
-        Route::put(
-            '/usuarios/{user}',
-            [UserController::class, 'update']
-        )->name('users.update');
-
-
-        Route::patch(
-            '/usuarios/{user}/estado',
-            [UserController::class, 'toggleStatus']
-        )->name('users.toggle-status');
-
-
-        Route::delete(
-            '/usuarios/{user}',
-            [UserController::class, 'destroy']
-        )->name('users.destroy');
+        Route::get('/usuarios',[UserController::class, 'index'])->name('users.index');
+        Route::get('/usuarios/crear',[UserController::class, 'create'])->name('users.create');
+        Route::post('/usuarios',[UserController::class, 'store'])->name('users.store');
+        Route::get('/usuarios/{user}/editar',[UserController::class, 'edit'])->name('users.edit');
+        Route::put('/usuarios/{user}',[UserController::class, 'update'])->name('users.update');
+        Route::patch('/usuarios/{user}/estado',[UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::delete('/usuarios/{user}',[UserController::class, 'destroy'])->name('users.destroy');
 
 
         /*
@@ -239,46 +203,13 @@ Route::middleware([
     ->name('professor.')
     ->group(function () {
 
-        Route::get(
-            '/dashboard',
-            [ProfessorDashboardController::class, 'index']
-        )->name('dashboard');
-
-
-        Route::get(
-            '/cursos',
-            [ProfessorCourseController::class, 'index']
-        )->name('courses.index');
-
-
-        Route::get(
-            '/cursos/crear',
-            [ProfessorCourseController::class, 'create']
-        )->name('courses.create');
-
-
-        Route::post(
-            '/cursos',
-            [ProfessorCourseController::class, 'store']
-        )->name('courses.store');
-
-
-        Route::get(
-            '/cursos/{curso}/editar',
-            [ProfessorCourseController::class, 'edit']
-        )->name('courses.edit');
-
-
-        Route::put(
-            '/cursos/{curso}',
-            [ProfessorCourseController::class, 'update']
-        )->name('courses.update');
-
-
-        Route::delete(
-            '/cursos/{curso}',
-            [ProfessorCourseController::class, 'destroy']
-        )->name('courses.destroy');
+        Route::get('/dashboard',[ProfessorDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/cursos',[ProfessorCourseController::class, 'index'])->name('courses.index');
+        Route::get('/cursos/crear',[ProfessorCourseController::class, 'create'])->name('courses.create');
+        Route::post('/cursos',[ProfessorCourseController::class, 'store'])->name('courses.store');
+        Route::get('/cursos/{curso}/editar',[ProfessorCourseController::class, 'edit'])->name('courses.edit');
+        Route::put('/cursos/{curso}',[ProfessorCourseController::class, 'update'])->name('courses.update');
+        Route::delete('/cursos/{curso}',[ProfessorCourseController::class, 'destroy'])->name('courses.destroy');
 
 
         Route::patch(
