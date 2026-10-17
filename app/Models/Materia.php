@@ -3,11 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Materia extends Model
 {
     protected $table = 'materias';
+
+    public const NOMBRES_FIJOS = [
+        'Matemáticas',
+        'Física',
+        'Química',
+    ];
 
     public const CREATED_AT = 'creado_en';
 
@@ -18,6 +25,13 @@ class Materia extends Model
         'descripcion',
         'estado',
     ];
+
+    public function scopeActivasParaCursos(Builder $query): Builder
+    {
+        return $query
+            ->whereIn('nombre', self::NOMBRES_FIJOS)
+            ->where('estado', 'activo');
+    }
 
     public function cursos(): HasMany
     {

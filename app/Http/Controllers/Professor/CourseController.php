@@ -102,7 +102,7 @@ class CourseController extends Controller
 
 
         $materias = Materia::query()
-            ->where('estado', 'activo')
+            ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
 
@@ -123,7 +123,7 @@ class CourseController extends Controller
     public function create()
     {
         $materias = Materia::query()
-            ->where('estado', 'activo')
+            ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
 
@@ -140,7 +140,9 @@ class CourseController extends Controller
         $validated = $request->validate([
             'materia_id' => [
                 'required',
-                'exists:materias,id',
+                Rule::exists('materias', 'id')
+                    ->where('estado', 'activo')
+                    ->whereIn('nombre', Materia::NOMBRES_FIJOS),
             ],
 
             'titulo' => [
@@ -236,7 +238,7 @@ class CourseController extends Controller
 
 
         $materias = Materia::query()
-            ->where('estado', 'activo')
+            ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
 
@@ -261,7 +263,9 @@ class CourseController extends Controller
         $validated = $request->validate([
             'materia_id' => [
                 'required',
-                'exists:materias,id',
+                Rule::exists('materias', 'id')
+                    ->where('estado', 'activo')
+                    ->whereIn('nombre', Materia::NOMBRES_FIJOS),
             ],
 
             'titulo' => [
