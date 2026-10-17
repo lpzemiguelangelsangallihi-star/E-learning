@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class bitacoras extends Model
 {
     //
     protected $table = 'bitacoras';
     public const CREATED_AT = 'fecha';
-    public const UPDATE_AT = null;
+    public const UPDATED_AT = null;
     protected $fillable = [
         'accion',
         'visible',
@@ -19,6 +20,7 @@ class bitacoras extends Model
     {
         return [
             'visible' => 'boolean',
+            'fecha' => 'datetime',
         ];
     }
     public function usuario(): BelongsTo
