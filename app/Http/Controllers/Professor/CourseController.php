@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Professor;
 use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use App\Models\Materia;
+use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -102,7 +103,7 @@ class CourseController extends Controller
 
 
         $materias = Materia::query()
-            ->where('estado', 'activo')
+            ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
 
@@ -123,7 +124,7 @@ class CourseController extends Controller
     public function create()
     {
         $materias = Materia::query()
-            ->where('estado', 'activo')
+            ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
 
@@ -140,7 +141,9 @@ class CourseController extends Controller
         $validated = $request->validate([
             'materia_id' => [
                 'required',
-                'exists:materias,id',
+                Rule::exists('materias', 'id')
+                    ->where('estado', 'activo')
+                    ->whereIn('nombre', Materia::NOMBRES_FIJOS),
             ],
 
             'titulo' => [
@@ -154,38 +157,10 @@ class CourseController extends Controller
                 'string',
             ],
 
-            'nivel' => [
-                'required',
-                Rule::in([
-                    'basico',
-                    'intermedio',
-                    'avanzado',
-                ]),
-            ],
-
-            'duracion' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
-
-            'tipo' => [
-                'required',
-                Rule::in([
-                    'gratuito',
-                    'pago',
-                ]),
-            ],
-
-            'precio' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],
         ]);
 
 
-        Curso::create([
+        $curso = Curso::create([
             'profesor_id' =>
                 Auth::id(),
 
@@ -200,23 +175,14 @@ class CourseController extends Controller
                     ? trim($validated['descripcion'])
                     : null,
 
-            'nivel' =>
-                $validated['nivel'],
-
-            'duracion' =>
-                $validated['duracion'] ?? 0,
-
-            'tipo' =>
-                $validated['tipo'],
-
-            'precio' =>
-                $validated['tipo'] === 'pago'
-                    ? ($validated['precio'] ?? 0)
-                    : 0,
-
             'estado' =>
                 'borrador',
         ]);
+
+
+        BitacoraService::registrar(
+            "Creó el curso {$curso->titulo}."
+        );
 
 
         return redirect()
@@ -236,7 +202,7 @@ class CourseController extends Controller
 
 
         $materias = Materia::query()
-            ->where('estado', 'activo')
+            ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
 
@@ -261,7 +227,9 @@ class CourseController extends Controller
         $validated = $request->validate([
             'materia_id' => [
                 'required',
-                'exists:materias,id',
+                Rule::exists('materias', 'id')
+                    ->where('estado', 'activo')
+                    ->whereIn('nombre', Materia::NOMBRES_FIJOS),
             ],
 
             'titulo' => [
@@ -275,34 +243,6 @@ class CourseController extends Controller
                 'string',
             ],
 
-            'nivel' => [
-                'required',
-                Rule::in([
-                    'basico',
-                    'intermedio',
-                    'avanzado',
-                ]),
-            ],
-
-            'duracion' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
-
-            'tipo' => [
-                'required',
-                Rule::in([
-                    'gratuito',
-                    'pago',
-                ]),
-            ],
-
-            'precio' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],
 
             'estado' => [
                 'required',
@@ -327,23 +267,14 @@ class CourseController extends Controller
                     ? trim($validated['descripcion'])
                     : null,
 
-            'nivel' =>
-                $validated['nivel'],
-
-            'duracion' =>
-                $validated['duracion'] ?? 0,
-
-            'tipo' =>
-                $validated['tipo'],
-
-            'precio' =>
-                $validated['tipo'] === 'pago'
-                    ? ($validated['precio'] ?? 0)
-                    : 0,
-
             'estado' =>
                 $validated['estado'],
         ]);
+
+
+        BitacoraService::registrar(
+            "Actualizó el curso {$curso->titulo}."
+        );
 
 
         return redirect()
@@ -371,7 +302,13 @@ class CourseController extends Controller
         }
 
 
+        $tituloCurso = $curso->titulo;
         $curso->delete();
+
+
+        BitacoraService::registrar(
+            "Eliminó el curso {$tituloCurso}."
+        );
 
 
         return redirect()
@@ -398,6 +335,11 @@ class CourseController extends Controller
         $curso->update([
             'estado' => $publicar ? 'publicado' : 'oculto',
         ]);
+
+
+        BitacoraService::registrar(
+            "Cambió el estado del curso {$curso->titulo} a {$curso->estado}."
+        );
 
         return back()->with(
             'success',

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\BitacoraController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\ProfileController;
@@ -92,6 +93,11 @@ Route::middleware([
         */
 
         Route::get('/dashboard',[DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get(
+            '/bitacora',
+            [BitacoraController::class, 'index']
+        )->name('bitacora.index');
 
 
         /*

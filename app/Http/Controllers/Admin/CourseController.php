@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use App\Models\Materia;
+use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -89,7 +90,7 @@ class CourseController extends Controller
 
 
         $materias = Materia::query()
-            ->where('estado', 'activo')
+            ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
 
@@ -125,6 +126,11 @@ class CourseController extends Controller
         ]);
 
 
+        BitacoraService::registrar(
+            "Cambió la visibilidad del curso {$curso->titulo} a {$curso->estado}."
+        );
+
+
         return back()->with(
             'success',
             $curso->estado === 'publicado'
@@ -149,7 +155,13 @@ class CourseController extends Controller
         }
 
 
+        $tituloCurso = $curso->titulo;
         $curso->delete();
+
+
+        BitacoraService::registrar(
+            "Eliminó el curso {$tituloCurso}."
+        );
 
 
         return redirect()
