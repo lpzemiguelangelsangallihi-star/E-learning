@@ -3,36 +3,6 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-<<<<<<< HEAD
-use App\Models\Inscripcion;
-use Illuminate\Support\Facades\Auth;
-
-class DashboardController extends Controller
-{
-    public function index()
-    {
-        $inscripciones = Inscripcion::query()
-            ->with(['curso.materia', 'curso.profesor'])
-            ->where('estudiante_id', Auth::id())
-            ->where('estado', 'activo')
-            ->orderByDesc('fecha_inscripcion')
-            ->get()
-            ->filter(fn ($inscripcion) => $inscripcion->curso !== null)
-            ->values();
-
-        // Cantidad de temas visibles (unidad activa + tema publicado) por curso.
-        $temas = [];
-
-        foreach ($inscripciones as $inscripcion) {
-            $temas[$inscripcion->curso_id] = $inscripcion->curso
-                ->lecciones()
-                ->where('modulos.estado', 'activo')
-                ->where('lecciones.estado', 'publicado')
-                ->count();
-        }
-
-        return view('student.dashboard', compact('inscripciones', 'temas'));
-=======
 use App\Models\Calificacion;
 use App\Models\Inscripcion;
 use App\Models\ProgresoCurso;
@@ -70,10 +40,11 @@ class DashboardController extends Controller
             'promedio' => $promedio !== null ? round($promedio, 1) : null,
         ];
 
-        // Cursos en los que el estudiante puede seguir avanzando.
         $continuar = $inscripciones
             ->where('estado', 'activo')
-            ->filter(fn ($inscripcion) => $inscripcion->curso?->estado === 'publicado')
+            ->filter(
+                fn ($inscripcion) => $inscripcion->curso?->estado === 'publicado'
+            )
             ->sortByDesc(
                 fn ($inscripcion) =>
                     (float) ($progresos[$inscripcion->curso_id]->porcentaje ?? 0)
@@ -97,6 +68,5 @@ class DashboardController extends Controller
             'racha' => (int) ($racha->racha_actual ?? 0),
             'experiencia' => $experiencia,
         ]);
->>>>>>> bb5ded3887008384a4b1ffae92a0fd0dc2279343
     }
 }

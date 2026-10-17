@@ -6,74 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use App\Models\Inscripcion;
 use App\Models\Leccion;
-<<<<<<< HEAD
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-=======
 use App\Models\ProgresoCurso;
 use App\Models\ProgresoLeccion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
->>>>>>> bb5ded3887008384a4b1ffae92a0fd0dc2279343
 
 class CourseController extends Controller
 {
     /**
-<<<<<<< HEAD
-     * Inscripción mediante código de clase.
-     */
-    public function join(Request $request)
-    {
-        $request->validate(
-            ['codigo' => ['required', 'string', 'max:20']],
-            ['codigo.required' => 'Ingresa el código de clase.']
-        );
-
-        $codigo = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $request->input('codigo')));
-
-        $curso = Curso::where('codigo_clase', $codigo)->first();
-
-        if (! $curso) {
-            return back()
-                ->withErrors(['codigo' => 'El código no corresponde a ningún curso.'])
-                ->withInput();
-        }
-
-        if ($curso->estado !== 'publicado') {
-            return back()
-                ->withErrors(['codigo' => 'Este curso todavía no está disponible.'])
-                ->withInput();
-        }
-
-        $inscripcion = Inscripcion::where('curso_id', $curso->id)
-            ->where('estudiante_id', Auth::id())
-            ->first();
-
-        if ($inscripcion) {
-            if ($inscripcion->estado === 'cancelado') {
-                $inscripcion->update([
-                    'estado' => 'activo',
-                    'fecha_inscripcion' => now(),
-                ]);
-
-                return redirect()
-                    ->route('student.courses.show', $curso)
-                    ->with('success', 'Volviste a inscribirte en el curso.');
-            }
-
-            return redirect()
-                ->route('student.courses.show', $curso)
-                ->with('success', 'Ya estabas inscrito en este curso.');
-        }
-
-        Inscripcion::create([
-            'curso_id' => $curso->id,
-            'estudiante_id' => Auth::id(),
-            'fecha_inscripcion' => now(),
-            'estado' => 'activo',
-        ]);
-=======
      * Mis cursos.
      */
     public function index(Request $request)
@@ -113,7 +54,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Formulario para inscribirse con código.
+     * Formulario para inscribirse.
      */
     public function join()
     {
@@ -121,7 +62,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Inscribe al estudiante usando el código de acceso del curso.
+     * Inscripción compatible con los códigos de ambas versiones.
      */
     public function enroll(Request $request)
     {
@@ -131,11 +72,16 @@ class CourseController extends Controller
             'codigo.required' => 'Ingresa el código del curso.',
         ]);
 
-        $codigo = strtoupper(trim($validated['codigo']));
+        $codigo = strtoupper(
+            preg_replace('/[^A-Za-z0-9]/', '', $validated['codigo'])
+        );
+
         $estudianteId = Auth::id();
 
         $curso = Curso::query()
-            ->where('codigo_acceso', $codigo)
+            ->where(fn ($query) => $query
+                ->where('codigo_clase', $codigo)
+                ->orWhere('codigo_acceso', $codigo))
             ->where('estado', 'publicado')
             ->first();
 
@@ -158,22 +104,27 @@ class CourseController extends Controller
                 ->with('info', 'Ya estás inscrito en este curso.');
         }
 
-        DB::transaction(function () use ($inscripcion, $curso, $estudianteId) {
-
+        DB::transaction(function () use (
+            $inscripcion,
+            $curso,
+            $estudianteId
+        ) {
             if ($inscripcion) {
-                // Reactiva una inscripción cancelada.
-                $inscripcion->update(['estado' => 'activo']);
+                $inscripcion->update([
+                    'estado' => 'activo',
+                    'fecha_inscripcion' => now(),
+                ]);
             } else {
                 Inscripcion::create([
                     'curso_id' => $curso->id,
                     'estudiante_id' => $estudianteId,
+                    'fecha_inscripcion' => now(),
                     'estado' => 'activo',
                 ]);
             }
 
             ProgresoCurso::recalcular($curso->id, $estudianteId);
         });
->>>>>>> bb5ded3887008384a4b1ffae92a0fd0dc2279343
 
         return redirect()
             ->route('student.courses.show', $curso)
@@ -181,76 +132,7 @@ class CourseController extends Controller
     }
 
     /**
-<<<<<<< HEAD
-     * Estructura del curso: unidades activas con temas publicados.
-     */
-    public function show(Curso $curso)
-    {
-        $this->authorizeAccess($curso);
-
-        $curso->load(['materia', 'profesor']);
-
-        $modulos = $this->visibleStructure($curso);
-
-        return view('student.courses.show', compact('curso', 'modulos'));
-    }
-
-    /**
-     * Contenido de un tema: texto, videos y materiales.
-     */
-    public function lesson(Curso $curso, Leccion $leccion)
-    {
-        $this->authorizeAccess($curso);
-
-        $leccion->load('modulo');
-
-        if (
-            ! $leccion->modulo
-            || (int) $leccion->modulo->curso_id !== (int) $curso->id
-            || $leccion->modulo->estado !== 'activo'
-            || $leccion->estado !== 'publicado'
-        ) {
-            abort(404);
-        }
-
-        $leccion->load(['videos', 'materiales']);
-
-        // Navegación anterior / siguiente entre los temas visibles.
-        $plano = $this->visibleStructure($curso)
-            ->flatMap(fn ($modulo) => $modulo->lecciones)
-            ->values();
-
-        $posicion = $plano->search(fn ($item) => (int) $item->id === (int) $leccion->id);
-
-        $anterior = $posicion !== false && $posicion > 0 ? $plano[$posicion - 1] : null;
-        $siguiente = $posicion !== false ? $plano->get($posicion + 1) : null;
-
-        return view('student.lessons.show', compact('curso', 'leccion', 'anterior', 'siguiente'));
-    }
-
-    private function authorizeAccess(Curso $curso): void
-    {
-        $inscrito = Inscripcion::where('curso_id', $curso->id)
-            ->where('estudiante_id', Auth::id())
-            ->where('estado', 'activo')
-            ->exists();
-
-        if (! $inscrito || $curso->estado !== 'publicado') {
-            abort(403);
-        }
-    }
-
-    private function visibleStructure(Curso $curso)
-    {
-        return $curso->modulos()
-            ->where('estado', 'activo')
-            ->with(['lecciones' => fn ($query) => $query
-                ->where('estado', 'publicado')
-                ->withCount(['videos', 'materiales'])])
-            ->get();
-    }
-=======
-     * Detalle del curso: profesor, unidades y temas.
+     * Detalle del curso.
      */
     public function show(Curso $curso)
     {
@@ -278,10 +160,15 @@ class CourseController extends Controller
             ->where('estado', 'publicado')
             ->count();
 
-        // Primer tema sin completar, para el botón "Continuar".
         $siguiente = $modulos
             ->flatMap->lecciones
-            ->first(fn ($leccion) => !in_array($leccion->id, $completadas, true));
+            ->first(
+                fn ($leccion) => !in_array(
+                    $leccion->id,
+                    $completadas,
+                    true
+                )
+            );
 
         return view('student.courses.show', compact(
             'curso',
@@ -294,7 +181,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Tema (lección): contenido, videos, materiales y evaluaciones.
+     * Contenido de un tema.
      */
     public function lesson(Curso $curso, Leccion $leccion)
     {
@@ -304,7 +191,7 @@ class CourseController extends Controller
 
         abort_unless(
             $leccion->modulo
-                && $leccion->modulo->curso_id === $curso->id
+                && (int) $leccion->modulo->curso_id === (int) $curso->id
                 && $leccion->modulo->estado === 'activo'
                 && $leccion->estado === 'publicado',
             404
@@ -329,7 +216,11 @@ class CourseController extends Controller
             ->where('estudiante_id', $estudianteId)
             ->where('estado', 'finalizado')
             ->whereIn('examen_id', $leccion->examenes->pluck('id'))
-            ->select('examen_id', DB::raw('COUNT(*) as total'), DB::raw('MAX(calificacion) as mejor'))
+            ->select(
+                'examen_id',
+                DB::raw('COUNT(*) as total'),
+                DB::raw('MAX(calificacion) as mejor')
+            )
             ->groupBy('examen_id')
             ->get()
             ->keyBy('examen_id');
@@ -340,9 +231,13 @@ class CourseController extends Controller
             ->where('completado', true)
             ->exists();
 
-        // Lista plana de temas para navegar anterior / siguiente.
-        $lista = $this->modulosConLecciones($curso)->flatMap->lecciones->values();
-        $posicion = $lista->search(fn ($item) => $item->id === $leccion->id);
+        $lista = $this->modulosConLecciones($curso)
+            ->flatMap->lecciones
+            ->values();
+
+        $posicion = $lista->search(
+            fn ($item) => (int) $item->id === (int) $leccion->id
+        );
 
         $anterior = $posicion !== false && $posicion > 0
             ? $lista[$posicion - 1]
@@ -364,7 +259,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Marca un tema como completado y actualiza progreso, XP y racha.
+     * Completa un tema y actualiza progreso, XP y racha.
      */
     public function completeLesson(Curso $curso, Leccion $leccion)
     {
@@ -374,18 +269,21 @@ class CourseController extends Controller
 
         abort_unless(
             $leccion->modulo
-                && $leccion->modulo->curso_id === $curso->id
+                && (int) $leccion->modulo->curso_id === (int) $curso->id
                 && $leccion->modulo->estado === 'activo'
                 && $leccion->estado === 'publicado',
             404
         );
 
         $estudianteId = Auth::id();
-
         $nuevo = false;
 
-        DB::transaction(function () use ($curso, $leccion, $estudianteId, &$nuevo) {
-
+        DB::transaction(function () use (
+            $curso,
+            $leccion,
+            $estudianteId,
+            &$nuevo
+        ) {
             $progreso = ProgresoLeccion::firstOrNew([
                 'leccion_id' => $leccion->id,
                 'estudiante_id' => $estudianteId,
@@ -408,14 +306,14 @@ class CourseController extends Controller
 
         return back()->with(
             'success',
-            $nuevo ? 'Tema completado. ¡Ganaste 10 XP!' : 'Este tema ya estaba completado.'
+            $nuevo
+                ? 'Tema completado. ¡Ganaste 10 XP!'
+                : 'Este tema ya estaba completado.'
         );
     }
 
-    /* ------------------------------------------------------------------ */
-
     /**
-     * Solo estudiantes inscritos pueden ver un curso publicado.
+     * Verifica inscripción y disponibilidad del curso.
      */
     private function authorizeEnrollment(Curso $curso): Inscripcion
     {
@@ -427,7 +325,11 @@ class CourseController extends Controller
             ->whereIn('estado', ['activo', 'finalizado'])
             ->first();
 
-        abort_unless($inscripcion, 403, 'No estás inscrito en este curso.');
+        abort_unless(
+            $inscripcion,
+            403,
+            'No estás inscrito en este curso.'
+        );
 
         return $inscripcion;
     }
@@ -447,13 +349,12 @@ class CourseController extends Controller
     }
 
     /**
-     * +10 XP y actualización de la racha diaria.
+     * Registra experiencia y racha diaria.
      */
     private function registrarActividad(int $estudianteId): void
     {
         $hoy = now()->toDateString();
 
-        // Experiencia.
         $existe = DB::table('usuario_experiencia')
             ->where('estudiante_id', $estudianteId)
             ->exists();
@@ -469,7 +370,6 @@ class CourseController extends Controller
             ]);
         }
 
-        // Racha.
         $racha = DB::table('rachas')
             ->where('estudiante_id', $estudianteId)
             ->first();
@@ -501,5 +401,4 @@ class CourseController extends Controller
                 'ultima_fecha' => $hoy,
             ]);
     }
->>>>>>> bb5ded3887008384a4b1ffae92a0fd0dc2279343
 }

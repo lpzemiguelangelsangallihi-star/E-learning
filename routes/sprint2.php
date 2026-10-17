@@ -13,7 +13,7 @@ use App\Http\Controllers\Professor\LessonController;
 use App\Http\Controllers\Professor\MaterialController;
 use App\Http\Controllers\Professor\ModuleController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
-use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
+use App\Http\Controllers\Student\DashboardController as StudentDashboardController; 
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -86,8 +86,11 @@ Route::middleware([
     });
 
 /*
+|--------------------------------------------------------------------------
 | ESTUDIANTE
+|--------------------------------------------------------------------------
 */
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -98,15 +101,25 @@ Route::middleware([
     ->name('student.')
     ->group(function () {
 
-        Route::get('/dashboard', [StudentDashboardController::class, 'index'])
-            ->name('dashboard');
+        // Compatibilidad con el formulario anterior.
+        Route::post(
+            '/cursos/unirse',
+            [StudentCourseController::class, 'enroll']
+        )->name('courses.join-legacy');
 
-        Route::post('/cursos/unirse', [StudentCourseController::class, 'join'])
-            ->name('courses.join');
+        Route::get(
+            '/cursos/{curso}',
+            [StudentCourseController::class, 'show']
+        )->name('courses.show');
 
-        Route::get('/cursos/{curso}', [StudentCourseController::class, 'show'])
-            ->name('courses.show');
+        Route::post(
+            '/cursos/{curso}/temas/{leccion}/completar',
+            [StudentCourseController::class, 'completeLesson']
+        )->name('lessons.complete');
 
-        Route::get('/cursos/{curso}/temas/{leccion}', [StudentCourseController::class, 'lesson'])
-            ->name('lessons.show');
+        Route::get(
+            '/cursos/{curso}/temas/{leccion}',
+            [StudentCourseController::class, 'lesson']
+        )->name('lessons.show');
+
     });

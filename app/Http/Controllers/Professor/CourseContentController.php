@@ -32,11 +32,18 @@ class CourseContentController extends Controller
      * pero los estudiantes ya inscritos conservan su acceso.
      */
     public function regenerateCode(Curso $curso)
-    {
-        $this->ownCourse($curso);
+{
+    $this->ownCourse($curso);
 
-        $curso->update(['codigo_clase' => Curso::generarCodigo()]);
+    // Invalida los códigos anteriores de ambas versiones.
+    $curso->forceFill([
+        'codigo_clase' => Curso::generarCodigo(),
+        'codigo_acceso' => null,
+    ])->save();
 
-        return back()->with('success', 'Se generó un nuevo código de clase.');
-    }
+    return back()->with(
+        'success',
+        'Se generó un nuevo código de clase.'
+    );
+}
 }

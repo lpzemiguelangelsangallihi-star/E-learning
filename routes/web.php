@@ -22,6 +22,7 @@ use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 
 
 
+
 /*
 |--------------------------------------------------------------------------
 | Página pública
@@ -250,10 +251,6 @@ Route::middleware([
 |--------------------------------------------------------------------------
 | ESTUDIANTE
 |--------------------------------------------------------------------------
-|
-| Lo dejamos mínimo por ahora.
-| Después retomaremos:
-|
 */
 
 Route::middleware([
@@ -268,26 +265,22 @@ Route::middleware([
 
         Route::get(
             '/dashboard',
-            [StudentDashboardController::class,'index']
+            [StudentDashboardController::class, 'index']
         )->name('dashboard');
 
-<<<<<<< HEAD
-    });
-require __DIR__.'/sprint2.php';
-=======
         Route::get(
             '/cursos',
-            [StudentCourseController::class,'index']
+            [StudentCourseController::class, 'index']
         )->name('courses.index');
 
         Route::get(
             '/cursos/inscribirse',
-            [StudentCourseController::class,'join']
+            [StudentCourseController::class, 'join']
         )->name('courses.join');
 
         Route::post(
             '/cursos/inscribirse',
-            [StudentCourseController::class,'enroll']
+            [StudentCourseController::class, 'enroll']
         )->name('courses.enroll');
 
         Route::get(
@@ -302,12 +295,12 @@ require __DIR__.'/sprint2.php';
 
         Route::get(
             '/calificaciones',
-            [GradeController::class,'index']
+            [GradeController::class, 'index']
         )->name('grades.index');
 
         Route::get(
-              '/progreso',
-            [ProgressController::class, 'index']           
+            '/progreso',
+            [ProgressController::class, 'index']
         )->name('progress.index');
 
         Route::get(
@@ -328,11 +321,8 @@ require __DIR__.'/sprint2.php';
         Route::put(
             '/perfil/password',
             [StudentProfileController::class, 'updatePassword']
-        )->name('profile.updatePassword');
+        )->name('profile.password');
 
-
-
-
-          
     });
->>>>>>> bb5ded3887008384a4b1ffae92a0fd0dc2279343
+
+require __DIR__.'/sprint2.php';

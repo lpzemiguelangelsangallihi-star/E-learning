@@ -44,36 +44,19 @@
 
 
             {{-- Videos --}}
-            @if ($leccion->videos->isNotEmpty())
-                <x-ui.card>
-                    <h2 class="mb-4 text-base font-bold text-slate-800">Videos</h2>
+@if ($leccion->videos->isNotEmpty())
+    <x-ui.card>
+        <h2 class="mb-4 text-base font-bold text-slate-800">
+            Videos
+        </h2>
 
-                    <ul class="space-y-3">
-                        @foreach ($leccion->videos as $video)
-                            <li class="flex items-center gap-4 rounded-lg border border-slate-200 p-4">
-                                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-red-50 text-[#DC2626]">
-                                    <i class="fa-solid fa-play" aria-hidden="true"></i>
-                                </div>
-
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate font-semibold text-slate-800">{{ $video->titulo }}</p>
-
-                                    @if ($video->duracion)
-                                        <p class="text-xs text-slate-500">{{ $video->duracion }} min</p>
-                                    @endif
-                                </div>
-
-                                @if ($esUrlSegura($video->url))
-                                    <x-ui.button :href="$video->url" target="_blank" rel="noopener noreferrer" variant="secondary" icon="fa-solid fa-arrow-up-right-from-square">
-                                        Ver
-                                    </x-ui.button>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                </x-ui.card>
-            @endif
-
+        <div class="space-y-4">
+            @foreach ($leccion->videos as $video)
+                <x-video-player :video="$video" />
+            @endforeach
+        </div>
+    </x-ui.card>
+@endif
 
             {{-- Materiales --}}
             @if ($leccion->materiales->isNotEmpty())
