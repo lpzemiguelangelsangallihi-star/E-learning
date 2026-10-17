@@ -34,4 +34,17 @@ class Inscripcion extends Model
     {
         return $this->belongsTo(User::class, 'estudiante_id');
     }
+
+    /**
+     * IDs de los cursos en los que el estudiante está inscrito
+     * (activos o ya finalizados).
+     */
+    public static function cursoIdsDe(int $estudianteId): array
+    {
+        return static::query()
+            ->where('estudiante_id', $estudianteId)
+            ->whereIn('estado', ['activo', 'finalizado'])
+            ->pluck('curso_id')
+            ->all();
+    }
 }

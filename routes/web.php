@@ -10,6 +10,15 @@ use App\Http\Controllers\Professor\DashboardController as ProfessorDashboardCont
 use App\Http\Controllers\Professor\CourseController as ProfessorCourseController;
 use App\Http\Controllers\Professor\StatisticsController as ProfessorStatisticsController;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
+use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
+use App\Http\Controllers\Student\CourseController as StudentCourseController;
+use App\Http\Controllers\Student\EvaluationController;
+use App\Http\Controllers\Student\GradeController;
+use App\Http\Controllers\Student\ProgressController;
+use App\Http\Controllers\Student\RecommendationController;
+use App\Http\Controllers\Student\ProfileController as StudentProfileController;
+
+
 
 
 /*
@@ -253,9 +262,66 @@ Route::middleware([
 
         Route::get(
             '/dashboard',
-            function () {
-                return view('student.dashboard');
-            }
+            [StudentDashboardController::class,'index']
         )->name('dashboard');
 
+        Route::get(
+            '/cursos',
+            [StudentCourseController::class,'index']
+        )->name('courses.index');
+
+        Route::get(
+            '/cursos/inscribirse',
+            [StudentCourseController::class,'join']
+        )->name('courses.join');
+
+        Route::post(
+            '/cursos/inscribirse',
+            [StudentCourseController::class,'enroll']
+        )->name('courses.enroll');
+
+        Route::get(
+            '/evaluaciones',
+            [EvaluationController::class, 'index']
+        )->name('evaluations.index');
+
+        Route::get(
+            '/evaluaciones/historial',
+            [EvaluationController::class, 'history']
+        )->name('evaluations.history');
+
+        Route::get(
+            '/calificaciones',
+            [GradeController::class,'index']
+        )->name('grades.index');
+
+        Route::get(
+              '/progreso',
+            [ProgressController::class, 'index']           
+        )->name('progress.index');
+
+        Route::get(
+            '/recomendaciones',
+            [RecommendationController::class, 'index']
+        )->name('recommendations.index');
+
+        Route::get(
+            '/perfil',
+            [StudentProfileController::class, 'edit']
+        )->name('profile.edit');
+
+        Route::put(
+            '/perfil',
+            [StudentProfileController::class, 'update']
+        )->name('profile.update');
+
+        Route::put(
+            '/perfil/password',
+            [StudentProfileController::class, 'updatePassword']
+        )->name('profile.updatePassword');
+
+
+
+
+          
     });
