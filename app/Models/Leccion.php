@@ -30,12 +30,14 @@ class Leccion extends Model
 
     public function videos(): HasMany
     {
-        return $this->hasMany(Video::class, 'leccion_id');
+        return $this->hasMany(Video::class, 'leccion_id')
+            ->orderBy('orden')
+            ->orderBy('id');
     }
 
     public function materiales(): HasMany
     {
-        return $this->hasMany(Material::class, 'leccion_id');
+        return $this->hasMany(Material::class, 'leccion_id')->orderBy('id');
     }
 
     public function tareas(): HasMany

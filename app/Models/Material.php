@@ -26,4 +26,26 @@ class Material extends Model
     {
         return $this->belongsTo(Leccion::class, 'leccion_id');
     }
+
+    /** URL para abrir/descargar el material (archivo subido o enlace). */
+    public function getEnlaceAttribute(): ?string
+    {
+        if ($this->archivo) {
+            return asset('storage/'.$this->archivo);
+        }
+
+        return $this->url;
+    }
+
+    public function getIconoAttribute(): string
+    {
+        return match ($this->tipo) {
+            'pdf' => 'fa-solid fa-file-pdf',
+            'imagen' => 'fa-solid fa-file-image',
+            'presentacion' => 'fa-solid fa-file-powerpoint',
+            'documento' => 'fa-solid fa-file-lines',
+            'enlace' => 'fa-solid fa-link',
+            default => 'fa-solid fa-file',
+        };
+    }
 }

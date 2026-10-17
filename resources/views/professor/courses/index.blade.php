@@ -405,13 +405,35 @@
                         >
 
                             <span>
+                                <i class="fa-solid fa-signal mr-1"></i>
+
+                                {{ ucfirst($curso->nivel) }}
+                            </span>
+
+                            <span>
                                 <i class="fa-solid fa-user-graduate mr-1"></i>
 
                                 {{ $curso->estudiantes_count }}
                                 estudiantes
                             </span>
 
+                            @if ($curso->duracion)
+                                <span>
+                                    <i class="fa-regular fa-clock mr-1"></i>
+
+                                    {{ $curso->duracion }} h
+                                </span>
+                            @endif
+
                         </div>
+
+                        @if ($curso->codigo_clase)
+                            <p class="mt-3 text-xs text-slate-500">
+                                <i class="fa-solid fa-key mr-1"></i>
+                                Código de clase:
+                                <span class="font-mono font-bold tracking-widest text-slate-700">{{ $curso->codigo_clase }}</span>
+                            </p>
+                        @endif
 
                     </div>
 
@@ -427,7 +449,7 @@
                         "
                     >
 
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
 
                         <a
                             href="{{ route('professor.courses.students', $curso) }}"
@@ -441,6 +463,20 @@
                         >
                             <i class="fa-solid fa-users"></i>
                             Estudiantes
+                        </a>
+
+                        <a
+                            href="{{ route('professor.courses.structure', $curso) }}"
+                            class="
+                                inline-flex items-center gap-2
+                                text-sm font-semibold
+                                text-slate-600
+                                hover:text-[#2563EB]
+                            "
+                            title="Unidades y temas"
+                        >
+                            <i class="fa-solid fa-layer-group"></i>
+                            Contenido
                         </a>
 
                         <form

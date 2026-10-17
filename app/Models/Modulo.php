@@ -27,8 +27,11 @@ class Modulo extends Model
         return $this->belongsTo(Curso::class, 'curso_id');
     }
 
+    /** Temas de la unidad, en su orden. */
     public function lecciones(): HasMany
     {
-        return $this->hasMany(Leccion::class, 'modulo_id');
+        return $this->hasMany(Leccion::class, 'modulo_id')
+            ->orderBy('orden')
+            ->orderBy('id');
     }
 }
