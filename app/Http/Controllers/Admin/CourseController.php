@@ -89,7 +89,7 @@ class CourseController extends Controller
 
 
         $materias = Materia::query()
-            ->where('estado', 'activo')
+            ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
 

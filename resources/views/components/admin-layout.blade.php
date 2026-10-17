@@ -629,6 +629,20 @@
                 "
             >
 
+                @isset($actions)
+
+                    <div
+                        class="
+                            mb-6 flex
+                            justify-end
+                        "
+                    >
+                        {{ $actions }}
+                    </div>
+
+                @endisset
+
+
                 {{ $slot }}
 
             </main>

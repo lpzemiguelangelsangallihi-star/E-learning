@@ -10,35 +10,37 @@ class MateriasSeeder extends Seeder
     public function run(): void
     {
         $materias = [
-            ['nombre' => 'Matemáticas',
-               'descripcion' => 'Funciones, trigonometría, geometría analítica, cálculo y estadística',
+            [
+                'nombre' => 'Matemáticas',
+                'descripcion' => 'Funciones, trigonometría, geometría analítica, cálculo y estadística',
+                'estado' => 'activo',
             ],
 
             [
                 'nombre' => 'Física',
                 'descripcion' =>
                     'Mecánica, electricidad, magnetismo, ondas y óptica',
+                'estado' => 'activo',
             ],
 
             [
                 'nombre' => 'Química',
                 'descripcion' =>
                     'Estructura de la materia, reacciones y química orgánica',
+                'estado' => 'activo',
             ],
         ];
 
-        foreach ($materias as $materia) {
+        $nombresFijos = array_column($materias, 'nombre');
 
-            DB::table('materias')->updateOrInsert(
-                [
-                    'nombre' => $materia['nombre'],
-                ],
-                [
-                    'descripcion' => $materia['descripcion'],
-                    'estado' => 'activo',
-                ]
-            );
+        DB::table('materias')
+            ->whereNotIn('nombre', $nombresFijos)
+            ->update(['estado' => 'inactivo']);
 
-        }
+        DB::table('materias')->upsert(
+            $materias,
+            ['nombre'],
+            ['descripcion', 'estado']
+        );
     }
 }
