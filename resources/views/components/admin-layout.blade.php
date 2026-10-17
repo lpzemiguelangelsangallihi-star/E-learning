@@ -259,6 +259,26 @@
 </a>
 
 
+                {{-- Bitácora --}}
+                <a
+                    href="{{ route('admin.bitacora.index') }}"
+                    class="
+                        mb-1 flex items-center gap-3
+                        rounded-lg px-3 py-2.5
+                        text-sm font-medium
+                        transition
+
+                        {{ request()->routeIs('admin.bitacora.*')
+                            ? 'bg-[#2563EB] text-white'
+                            : 'text-blue-50 hover:bg-white/10'
+                        }}
+                    "
+                >
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i>
+                    Bitácora
+                </a>
+
+
 
 
                 <a

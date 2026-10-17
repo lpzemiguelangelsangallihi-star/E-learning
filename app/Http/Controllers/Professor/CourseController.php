@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Professor;
 use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use App\Models\Materia;
+use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -159,7 +160,7 @@ class CourseController extends Controller
         ]);
 
 
-        Curso::create([
+        $curso = Curso::create([
             'profesor_id' =>
                 Auth::id(),
 
@@ -177,6 +178,11 @@ class CourseController extends Controller
             'estado' =>
                 'borrador',
         ]);
+
+
+        BitacoraService::registrar(
+            "Creó el curso {$curso->titulo}."
+        );
 
 
         return redirect()
@@ -266,6 +272,11 @@ class CourseController extends Controller
         ]);
 
 
+        BitacoraService::registrar(
+            "Actualizó el curso {$curso->titulo}."
+        );
+
+
         return redirect()
             ->route(
                 'professor.courses.index'
@@ -291,7 +302,13 @@ class CourseController extends Controller
         }
 
 
+        $tituloCurso = $curso->titulo;
         $curso->delete();
+
+
+        BitacoraService::registrar(
+            "Eliminó el curso {$tituloCurso}."
+        );
 
 
         return redirect()
@@ -318,6 +335,11 @@ class CourseController extends Controller
         $curso->update([
             'estado' => $publicar ? 'publicado' : 'oculto',
         ]);
+
+
+        BitacoraService::registrar(
+            "Cambió el estado del curso {$curso->titulo} a {$curso->estado}."
+        );
 
         return back()->with(
             'success',

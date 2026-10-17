@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Calificacion extends Model
 {
+    /** Escala 0-100, nota mínima de aprobación. */
+    public const NOTA_APROBACION = 51;
+
     protected $table = 'calificaciones';
 
     public $timestamps = false;
