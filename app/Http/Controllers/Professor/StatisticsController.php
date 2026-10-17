@@ -73,11 +73,6 @@ class StatisticsController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        // Cursos por tipo (gratuito / pago).
-        $coursesByType = $cursosBase()
-            ->select('tipo', DB::raw('COUNT(*) as total'))
-            ->groupBy('tipo')
-            ->pluck('total', 'tipo');
 
         return view(
             'professor.statistics.index',
@@ -85,8 +80,7 @@ class StatisticsController extends Controller
                 'stats',
                 'studentsByCourse',
                 'coursesByStatus',
-                'coursesBySubject',
-                'coursesByType'
+                'coursesBySubject'
             )
         );
     }

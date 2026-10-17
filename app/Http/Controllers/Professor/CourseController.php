@@ -154,34 +154,6 @@ class CourseController extends Controller
                 'string',
             ],
 
-            'nivel' => [
-                'required',
-                Rule::in([
-                    'basico',
-                    'intermedio',
-                    'avanzado',
-                ]),
-            ],
-
-            'duracion' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
-
-            'tipo' => [
-                'required',
-                Rule::in([
-                    'gratuito',
-                    'pago',
-                ]),
-            ],
-
-            'precio' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],
         ]);
 
 
@@ -199,20 +171,6 @@ class CourseController extends Controller
                 !empty($validated['descripcion'])
                     ? trim($validated['descripcion'])
                     : null,
-
-            'nivel' =>
-                $validated['nivel'],
-
-            'duracion' =>
-                $validated['duracion'] ?? 0,
-
-            'tipo' =>
-                $validated['tipo'],
-
-            'precio' =>
-                $validated['tipo'] === 'pago'
-                    ? ($validated['precio'] ?? 0)
-                    : 0,
 
             'estado' =>
                 'borrador',
@@ -275,34 +233,6 @@ class CourseController extends Controller
                 'string',
             ],
 
-            'nivel' => [
-                'required',
-                Rule::in([
-                    'basico',
-                    'intermedio',
-                    'avanzado',
-                ]),
-            ],
-
-            'duracion' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
-
-            'tipo' => [
-                'required',
-                Rule::in([
-                    'gratuito',
-                    'pago',
-                ]),
-            ],
-
-            'precio' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],
 
             'estado' => [
                 'required',
@@ -326,20 +256,6 @@ class CourseController extends Controller
                 !empty($validated['descripcion'])
                     ? trim($validated['descripcion'])
                     : null,
-
-            'nivel' =>
-                $validated['nivel'],
-
-            'duracion' =>
-                $validated['duracion'] ?? 0,
-
-            'tipo' =>
-                $validated['tipo'],
-
-            'precio' =>
-                $validated['tipo'] === 'pago'
-                    ? ($validated['precio'] ?? 0)
-                    : 0,
 
             'estado' =>
                 $validated['estado'],

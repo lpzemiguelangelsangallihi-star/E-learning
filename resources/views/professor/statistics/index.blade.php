@@ -79,8 +79,8 @@
     {{-- Estado y tipo --}}
     <x-ui.card class="mt-6">
         <div class="mb-6">
-            <h2 class="text-base font-bold text-slate-800">Estado y tipo de cursos</h2>
-            <p class="mt-1 text-sm text-slate-500">Visibilidad y modalidad de tus cursos.</p>
+            <h2 class="text-base font-bold text-slate-800">Estado de los cursos</h2>
+            <p class="mt-1 text-sm text-slate-500">Visibilidad actual de tus cursos.</p>
         </div>
 
         @php
@@ -88,12 +88,10 @@
                 ['Publicados', $coursesByStatus['publicado'] ?? 0, 'fa-solid fa-eye', 'bg-green-50 text-green-700 border-green-200'],
                 ['Borradores', $coursesByStatus['borrador'] ?? 0, 'fa-solid fa-pen-ruler', 'bg-yellow-50 text-yellow-700 border-yellow-200'],
                 ['Ocultos', $coursesByStatus['oculto'] ?? 0, 'fa-solid fa-eye-slash', 'bg-red-50 text-red-700 border-red-200'],
-                ['Gratuitos', $coursesByType['gratuito'] ?? 0, 'fa-solid fa-gift', 'bg-blue-50 text-blue-700 border-blue-200'],
-                ['De pago', $coursesByType['pago'] ?? 0, 'fa-solid fa-tag', 'bg-slate-50 text-slate-700 border-slate-200'],
             ];
         @endphp
 
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div class="grid gap-4 sm:grid-cols-3">
             @foreach ($cards as [$label, $total, $icon, $classes])
                 <div class="rounded-xl border p-5 {{ $classes }}">
                     <div class="flex items-center justify-between gap-4">

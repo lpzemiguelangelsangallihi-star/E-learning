@@ -324,7 +324,7 @@ Route::middleware([
         Route::get(
             '/dashboard',
             function () {
-                return view('student.dashboard');
+                return view('dashboard');
             }
         )->name('dashboard');
 

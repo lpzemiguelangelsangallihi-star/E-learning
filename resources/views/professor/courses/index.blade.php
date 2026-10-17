@@ -405,25 +405,11 @@
                         >
 
                             <span>
-                                <i class="fa-solid fa-signal mr-1"></i>
-
-                                {{ ucfirst($curso->nivel) }}
-                            </span>
-
-                            <span>
                                 <i class="fa-solid fa-user-graduate mr-1"></i>
 
                                 {{ $curso->estudiantes_count }}
                                 estudiantes
                             </span>
-
-                            @if ($curso->duracion)
-                                <span>
-                                    <i class="fa-regular fa-clock mr-1"></i>
-
-                                    {{ $curso->duracion }} h
-                                </span>
-                            @endif
 
                         </div>
 
