@@ -15,6 +15,8 @@ class bitacoras extends Model
         'accion',
         'visible',
         'usuario_id',
+        'usuario_nombre',
+        'rol_id',
     ];
     protected function casts(): array
     {
@@ -26,6 +28,11 @@ class bitacoras extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    public function rol(): BelongsTo
+    {
+        return $this->belongsTo(Rol::class, 'rol_id');
     }
 
 }

@@ -78,8 +78,8 @@
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                             Usuario
                         </th>
-                        <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            Visibilidad
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            Rol
                         </th>
                     </tr>
                 </thead>
@@ -96,13 +96,15 @@
                             </td>
 
                             <td class="whitespace-nowrap px-6 py-4">
-                                @if ($registro->usuario)
+                                @if ($registro->usuario_nombre || $registro->usuario)
                                     <p class="text-sm font-semibold text-slate-800">
-                                        {{ $registro->usuario->nombre_completo }}
+                                        {{ $registro->usuario_nombre ?: $registro->usuario->nombre_completo }}
                                     </p>
-                                    <p class="mt-0.5 text-xs text-slate-500">
-                                        {{ $registro->usuario->email }}
-                                    </p>
+                                    @if ($registro->usuario?->email)
+                                        <p class="mt-0.5 text-xs text-slate-500">
+                                            {{ $registro->usuario->email }}
+                                        </p>
+                                    @endif
                                 @else
                                     <span class="text-sm text-slate-500">
                                         Usuario eliminado
@@ -110,10 +112,8 @@
                                 @endif
                             </td>
 
-                            <td class="whitespace-nowrap px-6 py-4 text-center">
-                                <x-ui.badge :type="$registro->visible ? 'success' : 'danger'">
-                                    {{ $registro->visible ? 'Visible' : 'Oculta' }}
-                                </x-ui.badge>
+                            <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-600">
+                                {{ $registro->rol?->nombre ?? '—' }}
                             </td>
                         </tr>
                     @empty

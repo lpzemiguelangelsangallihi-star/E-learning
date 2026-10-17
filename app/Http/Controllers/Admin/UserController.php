@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Rol;
 use App\Models\User;
-use App\Services\BitacoraService;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -192,7 +190,7 @@ class UserController extends Controller
             ]);
 
 
-        $createdUser = User::create([
+        User::create([
 
             'rol_id' =>
                 $validated['rol_id'],
@@ -233,11 +231,6 @@ class UserController extends Controller
                 now(),
 
         ]);
-
-
-        BitacoraService::registrar(
-            "Creó el usuario {$createdUser->nombre_completo}."
-        );
 
 
         return redirect()
@@ -383,11 +376,6 @@ class UserController extends Controller
         $user->update($data);
 
 
-        BitacoraService::registrar(
-            "Actualizó el usuario {$user->nombre_completo}."
-        );
-
-
         return redirect()
 
             ->route(
@@ -425,11 +413,6 @@ class UserController extends Controller
         ]);
 
 
-        BitacoraService::registrar(
-            "Cambió el estado del usuario {$user->nombre_completo} a {$user->estado}."
-        );
-
-
         return back()->with(
             'success',
             'Estado actualizado correctamente.'
@@ -451,13 +434,7 @@ class UserController extends Controller
         }
 
 
-        $nombreUsuario = $user->nombre_completo;
         $user->delete();
-
-
-        BitacoraService::registrar(
-            "Eliminó el usuario {$nombreUsuario}."
-        );
 
 
         return redirect()

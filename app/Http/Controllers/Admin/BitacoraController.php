@@ -15,11 +15,12 @@ class BitacoraController extends Controller
         );
 
         $registros = Bitacora::query()
-            ->with('usuario')
+            ->with(['usuario', 'rol'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query
                         ->where('accion', 'like', "%{$search}%")
+                        ->orWhere('usuario_nombre', 'like', "%{$search}%")
                         ->orWhereHas('usuario', function ($usuarioQuery) use ($search) {
                             $usuarioQuery
                                 ->where('nombre', 'like', "%{$search}%")
