@@ -194,20 +194,7 @@ Route::middleware([
 |--------------------------------------------------------------------------
 | PROFESOR
 |--------------------------------------------------------------------------
-|
-| Por ahora dejamos solo una ruta básica.
-| Después construiremos:
-|
-| - Dashboard
-| - Mis cursos
-| - Aulas
-| - Contenido
-| - Evaluaciones
-| - Resultados
-| - Estadísticas
-|
 */
-
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -325,4 +312,4 @@ Route::middleware([
 
     });
 
-require __DIR__.'/sprint2.php';
+require __DIR__.'/academico.php';

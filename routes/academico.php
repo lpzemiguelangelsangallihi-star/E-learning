@@ -1,12 +1,5 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| SPRINT 2 - Gestión académica
-|--------------------------------------------------------------------------
-| Se carga desde routes/web.php con:
-|     require __DIR__.'/sprint2.php';
-*/
 
 use App\Http\Controllers\Professor\CourseContentController;
 use App\Http\Controllers\Professor\LessonController;
