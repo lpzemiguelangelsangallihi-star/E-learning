@@ -182,10 +182,10 @@ Route::middleware([
         )->name('settings.index');
 
 
-        Route::put(
-            '/configuracion/password',
-            [ProfileController::class, 'updatePassword']
-        )->name('settings.password');
+           Route::put(
+       '/configuracion/password',
+       [ProfileController::class, 'updatePassword']
+   )->name('settings.password');
 
     });
 
