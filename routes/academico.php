@@ -1,12 +1,10 @@
 <?php
 
-
 use App\Http\Controllers\Professor\CourseContentController;
 use App\Http\Controllers\Professor\LessonController;
 use App\Http\Controllers\Professor\MaterialController;
 use App\Http\Controllers\Professor\ModuleController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
-use App\Http\Controllers\Student\DashboardController as StudentDashboardController; 
 use Illuminate\Support\Facades\Route;
 
 /*
