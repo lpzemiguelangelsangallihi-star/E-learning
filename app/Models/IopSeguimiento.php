@@ -21,6 +21,7 @@ class IopSeguimiento extends Model
         'ultima_calificacion',
         'activo',
         'consolidado_en',
+        'intento_diagnostico_id',
     ];
 
     protected $casts = [
@@ -30,6 +31,7 @@ class IopSeguimiento extends Model
         'ciclo_actual' => 'integer',
         'activo' => 'boolean',
         'consolidado_en' => 'datetime',
+        'intento_diagnostico_id' => 'integer',
     ];
 
     public function estudiante(): BelongsTo

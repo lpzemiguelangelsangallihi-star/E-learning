@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class IopRecomendacion extends Model
 {
@@ -42,6 +43,13 @@ class IopRecomendacion extends Model
         return $this->belongsTo(
             IopModeloDecision::class,
             'modelo_decision_id'
+        );
+    }
+    public function asignacionRefuerzo(): HasOne
+    {
+        return $this->hasOne(
+            IopAsignacionRefuerzo::class,
+            'recomendacion_id'
         );
     }
 }
