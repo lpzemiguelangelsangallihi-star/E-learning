@@ -313,3 +313,15 @@ Route::middleware([
     });
 
 require __DIR__.'/academico.php';
+
+/*IOP */
+Route::get(
+    '/iop/lecciones/{leccionId}/seguimiento',
+    function (int $leccionId) {
+        return view('iop.seguimiento', [
+            'leccionId' => $leccionId,
+        ]);
+    }
+)
+->middleware('auth')
+->name('iop.seguimiento');
