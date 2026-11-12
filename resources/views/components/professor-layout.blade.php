@@ -51,7 +51,7 @@
 
 <body
     class="
-        bg-[#F8FAFC]
+        app-shell bg-[#F8FAFC]
         font-sans
         text-slate-800
         antialiased
@@ -213,6 +213,25 @@
                     Mis cursos
 
                 </a>
+                @foreach ([
+                    ['Exámenes', 'professor.exams.index', 'professor.exams.*', 'fa-file-pen'],
+                    ['Tareas', 'professor.tasks.index', 'professor.tasks.*', 'fa-clipboard-list'],
+                    ['Reportes', 'professor.reports.index', 'professor.reports.*', 'fa-chart-pie'],
+                ] as [$navEtiqueta, $navRuta, $navPatron, $navIcono])
+                    <a
+                        href="{{ route($navRuta) }}"
+                        @class([
+                            'mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition',
+                            'bg-[#2563EB] text-white' => request()->routeIs($navPatron),
+                            'text-blue-50 hover:bg-white/10' => ! request()->routeIs($navPatron),
+                        ])
+                    >
+                        <i class="fa-solid {{ $navIcono }} w-5 text-center" aria-hidden="true"></i>
+
+                        {{ $navEtiqueta }}
+                    </a>
+                @endforeach
+
                 <a
                     href="{{ route('professor.statistics.index') }}"
                     class="

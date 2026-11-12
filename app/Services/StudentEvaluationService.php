@@ -37,6 +37,7 @@ class StudentEvaluationService
             )
             ->get()
             ->map(fn (Tarea $tarea) => [
+                'id' => $tarea->id,
                 'tipo' => 'tarea',
                 'titulo' => $tarea->titulo,
                 'curso' => $tarea->leccion?->modulo?->curso,
@@ -62,6 +63,7 @@ class StudentEvaluationService
                     $examen->intentos_realizados < $examen->intentos_permitidos
             )
             ->map(fn (Examen $examen) => [
+                'id' => $examen->id,
                 'tipo' => 'examen',
                 'titulo' => $examen->titulo,
                 'curso' => $examen->leccion?->modulo?->curso,
@@ -92,6 +94,7 @@ class StudentEvaluationService
             ->where('estado', 'finalizado')
             ->get()
             ->map(fn (IntentoExamen $intento) => [
+                'id' => $intento->id,
                 'tipo' => 'examen',
                 'titulo' => $intento->examen?->titulo ?? 'Examen eliminado',
                 'curso' => $intento->examen?->leccion?->modulo?->curso,
@@ -107,6 +110,7 @@ class StudentEvaluationService
             ->where('estudiante_id', $estudianteId)
             ->get()
             ->map(fn (Entrega $entrega) => [
+                'id' => $entrega->tarea_id,
                 'tipo' => 'tarea',
                 'titulo' => $entrega->tarea?->titulo ?? 'Tarea eliminada',
                 'curso' => $entrega->tarea?->leccion?->modulo?->curso,

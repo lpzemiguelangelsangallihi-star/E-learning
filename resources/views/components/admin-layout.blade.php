@@ -52,7 +52,7 @@
 
 <body
     class="
-        bg-[#F8FAFC]
+        app-shell bg-[#F8FAFC]
         font-sans
         text-slate-800
         antialiased

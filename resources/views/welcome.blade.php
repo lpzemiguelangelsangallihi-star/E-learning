@@ -83,39 +83,14 @@
 
 
     
-    <section
-        id="inicio"
-        class="relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-blue-700 pt-32"
-    >
-        <div class="absolute inset-0 opacity-20">
-            <div class="absolute -left-20 top-10 h-72 w-72 rounded-full bg-blue-400 blur-3xl"></div>
-            <div class="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-cyan-300 blur-3xl"></div>
-        </div>
-
-        <div class="relative mx-auto grid max-w-7xl items-center gap-14 px-6 py-24 lg:grid-cols-2">
-
-            <div>
-
-                <span class="inline-flex rounded-full border border-blue-300/30 bg-white/10 px-4 py-2 text-sm font-medium text-blue-100">
-                    Plataforma educativa inteligente
-                </span>
-
-                <h1 class="mt-6 text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
-                    Aprende, enseña y mejora tu rendimiento
-                    <span class="text-blue-300">
-                        en un solo lugar
-                    </span>
-                </h1>
-
-                <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-                    Nuestra plataforma E-Learning permite gestionar cursos,
-                    aulas virtuales, materiales, evaluaciones y progreso académico,
-                    ofreciendo una experiencia organizada para estudiantes y profesores.
-                </p>
-
-                <div class="mt-8 flex flex-wrap gap-4">
-
-                    @guest
+    <section id="inicio" class="lp-hero">
+        <div class="lp-sky"></div>
+        <div class="lp-inner">
+            <span class="lp-badge">Plataforma educativa inteligente</span>
+            <h1>Aprende, enseña y mejora tu rendimiento <span>en un solo lugar</span></h1>
+            <p class="lp-lead">Nuestra plataforma E-Learning permite gestionar cursos, aulas virtuales, materiales, evaluaciones y progreso académico, ofreciendo una experiencia organizada para estudiantes y profesores.</p>
+            <div class="lp-cta">
+                @guest
 
                         <a
                             href="{{ route('register') }}"
@@ -141,94 +116,12 @@
                         </a>
 
                     @endguest
-
-                </div>
-
-            </div>
-
-
-            <div class="relative">
-
-                <div class="rounded-3xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur">
-
-                    <div class="rounded-2xl bg-white p-6">
-
-                        <div class="mb-6 flex items-center justify-between">
-
-                            <div>
-                                <p class="text-sm text-slate-500">
-                                    Tu aprendizaje
-                                </p>
-
-                                <h3 class="text-xl font-bold text-slate-900">
-                                    Panel académico
-                                </h3>
-                            </div>
-
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                                <i class="fa-solid fa-chart-line"></i>
-                            </div>
-                        </div>
-
-
-                        <div class="grid gap-4 sm:grid-cols-2">
-
-                            <div class="rounded-xl bg-blue-50 p-4">
-                                <i class="fa-solid fa-book-open text-blue-600"></i>
-
-                                <p class="mt-3 text-2xl font-bold">
-                                    Cursos
-                                </p>
-
-                                <p class="text-sm text-slate-500">
-                                    Organiza tu aprendizaje
-                                </p>
-                            </div>
-
-
-                            <div class="rounded-xl bg-emerald-50 p-4">
-                                <i class="fa-solid fa-chart-pie text-emerald-600"></i>
-
-                                <p class="mt-3 text-2xl font-bold">
-                                    Progreso
-                                </p>
-
-                                <p class="text-sm text-slate-500">
-                                    Revisa tu avance
-                                </p>
-                            </div>
-
-
-                            <div class="rounded-xl bg-violet-50 p-4">
-                                <i class="fa-solid fa-file-circle-check text-violet-600"></i>
-
-                                <p class="mt-3 text-2xl font-bold">
-                                    Evaluaciones
-                                </p>
-
-                                <p class="text-sm text-slate-500">
-                                    Pon a prueba tus conocimientos
-                                </p>
-                            </div>
-
-
-                            <div class="rounded-xl bg-amber-50 p-4">
-                                <i class="fa-solid fa-lightbulb text-amber-600"></i>
-
-                                <p class="mt-3 text-2xl font-bold">
-                                    Recomendaciones
-                                </p>
-
-                                <p class="text-sm text-slate-500">
-                                    Refuerza tus dificultades
-                                </p>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
+        <div class="lp-m lp-m1"><svg viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true"><path d="M0 400 L0 169 L30 178 L57 141 L100 145 L144 143 L186 161 L214 183 L242 165 L285 183 L329 156 L362 201 L406 227 L450 197 L477 226 L504 194 L534 175 L564 193 L608 178 L655 171 L699 194 L731 183 L774 203 L818 162 L850 190 L893 185 L929 187 L969 179 L1002 214 L1050 214 L1078 196 L1120 190 L1156 212 L1191 201 L1219 152 L1258 155 L1294 153 L1335 181 L1382 142 L1425 199 L1440 400 Z" fill="rgba(37,99,235,.28)"/></svg></div>
+        <div class="lp-m lp-m2"><svg viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true"><path d="M0 400 L0 231 L37 261 L81 283 L109 287 L143 247 L190 205 L239 270 L285 257 L332 279 L367 269 L414 237 L454 239 L499 222 L526 230 L561 225 L594 243 L635 224 L675 244 L709 271 L748 271 L782 262 L819 262 L857 280 L887 221 L917 231 L950 213 L994 225 L1029 209 L1068 253 L1113 256 L1143 268 L1185 294 L1231 268 L1258 246 L1308 299 L1355 283 L1393 238 L1431 203 L1440 400 Z" fill="#13204a"/></svg></div>
+        <div class="lp-m lp-m3"><svg viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true"><path d="M0 400 L0 308 L32 274 L64 312 L93 303 L120 280 L164 286 L193 358 L238 278 L270 327 L300 329 L337 326 L378 290 L419 353 L459 317 L494 291 L523 334 L572 304 L620 299 L646 302 L688 311 L736 320 L762 331 L797 343 L825 329 L859 319 L890 309 L923 320 L973 318 L1019 298 L1069 344 L1102 343 L1151 343 L1183 319 L1220 338 L1246 344 L1287 296 L1335 328 L1372 313 L1421 368 L1440 400 Z" fill="#0B1226"/><path d="M0 308 L32 274 L64 312 L93 303 L120 280 L164 286 L193 358 L238 278 L270 327 L300 329 L337 326 L378 290 L419 353 L459 317 L494 291 L523 334 L572 304 L620 299 L646 302 L688 311 L736 320 L762 331 L797 343 L825 329 L859 319 L890 309 L923 320 L973 318 L1019 298 L1069 344 L1102 343 L1151 343 L1183 319 L1220 338 L1246 344 L1287 296 L1335 328 L1372 313 L1421 368" fill="none" stroke="#60A5FA" stroke-opacity=".55" stroke-width="1.5"/></svg></div>
+        <x-landing.sabio />
     </section>
 
 

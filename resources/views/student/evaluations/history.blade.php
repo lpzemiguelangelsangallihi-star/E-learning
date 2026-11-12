@@ -34,7 +34,12 @@
                         @foreach ($historial as $item)
                             <tr>
                                 <td class="px-6 py-4">
-                                    <p class="font-semibold text-slate-800">{{ $item['titulo'] }}</p>
+                                    @if ($item['curso'])
+                                        <a href="{{ $item['tipo'] === 'examen' ? route('student.evaluations.exam.result', $item['id']) : route('student.evaluations.task.show', $item['id']) }}"
+                                            class="font-semibold text-slate-800 hover:text-[#2563EB] hover:underline">{{ $item['titulo'] }}</a>
+                                    @else
+                                        <p class="font-semibold text-slate-800">{{ $item['titulo'] }}</p>
+                                    @endif
 
                                     <p class="text-xs text-slate-500">
                                         {{ $item['tipo'] === 'examen' ? 'Examen' : 'Tarea' }}

@@ -167,7 +167,7 @@
                                     @endif
                                 </div>
 
-                                <p class="mt-2 text-sm font-semibold text-slate-800">{{ $tarea->titulo }}</p>
+                                <a href="{{ route('student.evaluations.task.show', $tarea) }}" class="mt-2 block text-sm font-semibold text-slate-800 hover:text-[#2563EB] hover:underline">{{ $tarea->titulo }}</a>
 
                                 @if ($tarea->fecha_limite)
                                     <p class="text-xs text-slate-500">Vence: {{ $tarea->fecha_limite->format('d/m/Y H:i') }}</p>
@@ -185,7 +185,7 @@
                                     <span class="text-xs text-slate-500">{{ $intento->total ?? 0 }} / {{ $examen->intentos_permitidos }} intentos</span>
                                 </div>
 
-                                <p class="mt-2 text-sm font-semibold text-slate-800">{{ $examen->titulo }}</p>
+                                <a href="{{ route('student.evaluations.exam.show', $examen) }}" class="mt-2 block text-sm font-semibold text-slate-800 hover:text-[#2563EB] hover:underline">{{ $examen->titulo }}</a>
 
                                 @if ($intento && $intento->mejor !== null)
                                     <p class="text-xs text-slate-500">Mejor nota: {{ rtrim(rtrim(number_format($intento->mejor, 2), '0'), '.') }}</p>

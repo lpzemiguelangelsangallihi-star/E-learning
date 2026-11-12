@@ -60,11 +60,23 @@
                             <p><i class="fa-solid fa-trophy mr-1" aria-hidden="true"></i>Puntaje máximo: {{ rtrim(rtrim(number_format($item['puntaje'], 2), '0'), '.') }}</p>
                         </div>
 
-                        @if ($item['curso'] && $item['leccion'])
-                            <x-ui.button :href="route('student.lessons.show', [$item['curso'], $item['leccion']])" variant="secondary" class="mt-5 w-full">
-                                Ir al tema
-                            </x-ui.button>
-                        @endif
+                        <div class="mt-5 space-y-2">
+                            @if ($item['tipo'] === 'examen')
+                                <x-ui.button :href="route('student.evaluations.exam.show', $item['id'])" class="w-full" icon="fa-solid fa-play">
+                                    Resolver examen
+                                </x-ui.button>
+                            @else
+                                <x-ui.button :href="route('student.evaluations.task.show', $item['id'])" class="w-full" icon="fa-solid fa-paper-plane">
+                                    Ver y entregar
+                                </x-ui.button>
+                            @endif
+
+                            @if ($item['curso'] && $item['leccion'])
+                                <x-ui.button :href="route('student.lessons.show', [$item['curso'], $item['leccion']])" variant="secondary" class="w-full">
+                                    Ir al tema
+                                </x-ui.button>
+                            @endif
+                        </div>
                     </div>
                 </x-ui.card>
             @endforeach

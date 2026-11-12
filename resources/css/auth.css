@@ -1,0 +1,374 @@
+/* ==========================================================================
+   E-Learning · Login animado (Sabio, el búho)
+   Paleta: Primary #2563EB · Dark Blue #1E3A8A / #172554 · Warning #EAB308
+   Todo lo que está aquí es visual; la lógica está en resources/js/auth.js
+   ========================================================================== */
+
+/* ---------- Fondo ---------- */
+.auth-bg {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+        radial-gradient(90% 70% at 15% 0%, rgba(37, 99, 235, .35), transparent 60%),
+        radial-gradient(80% 60% at 100% 100%, rgba(30, 58, 138, .8), transparent 65%),
+        linear-gradient(160deg, #172554 0%, #1E3A8A 55%, #1E293B 100%);
+}
+
+.auth-swirl {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.auth-swirl path {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 520 1300;
+    animation: authFlow 18s linear infinite;
+}
+.auth-swirl path:nth-of-type(2) { animation-duration: 22s; animation-delay: -6s; }
+.auth-swirl path:nth-of-type(3) { animation-duration: 26s; animation-delay: -11s; }
+.auth-swirl path:nth-of-type(4) { animation-duration: 20s; animation-delay: -3s; }
+
+.auth-orb {
+    position: absolute;
+    z-index: 0;
+    border-radius: 9999px;
+    filter: blur(70px);
+    pointer-events: none;
+    animation: authDrift 18s ease-in-out infinite;
+}
+
+/* ---------- Figuras flotantes (siguen el cursor con data-depth) ---------- */
+.auth-float {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    will-change: transform;
+    transition: transform .35s cubic-bezier(.2, .8, .2, 1);
+}
+
+.auth-float > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    color: #BFDBFE;
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .14);
+    box-shadow: 0 12px 30px -10px rgba(2, 6, 23, .55);
+    backdrop-filter: blur(6px);
+    animation: authBob var(--dur, 7s) ease-in-out var(--d, 0s) infinite alternate;
+}
+
+.auth-float span { font-weight: 700; letter-spacing: -.02em; }
+
+.auth-float.is-gold > div {
+    color: #FDE68A;
+    background: rgba(234, 179, 8, .09);
+    border-color: rgba(234, 179, 8, .35);
+}
+
+.auth-float.lg-only { display: none; }
+@media (min-width: 1024px) { .auth-float.lg-only { display: block; } }
+
+/* ---------- Tarjeta de cristal ---------- */
+.auth-glass {
+    --cut: 28px;
+    position: relative;
+    background: linear-gradient(160deg, rgba(30, 58, 138, .55), rgba(23, 37, 84, .78));
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(140%);
+    /* esquinas cortadas en diagonal, como el diseño de referencia */
+    clip-path: polygon(
+        var(--cut) 0, 100% 0,
+        100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%,
+        0 100%, 0 var(--cut)
+    );
+    animation: authCardIn .8s cubic-bezier(.2, .8, .2, 1) both;
+}
+@media (min-width: 1024px) { .auth-glass { --cut: 36px; } }
+
+.auth-emblem {
+    position: absolute;
+    top: -70px;
+    right: -70px;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px dashed rgba(255, 255, 255, .12);
+    color: rgba(255, 255, 255, .05);
+    font-size: 96px;
+    pointer-events: none;
+    animation: authSpin 70s linear infinite;
+}
+.auth-emblem span { animation: authSpin 70s linear infinite reverse; }
+
+.auth-corner {
+    position: absolute;
+    z-index: 5;
+    width: var(--cut);
+    height: var(--cut);
+    pointer-events: none;
+    animation: authCornerIn .6s .6s both;
+}
+/* línea dorada sobre el corte diagonal */
+.auth-corner.tl { top: 0; left: 0; background: linear-gradient(to bottom right, transparent calc(50% - 1px), #EAB308 calc(50% - 1px), #EAB308 calc(50% + 1px), transparent calc(50% + 1px)); }
+.auth-corner.br { bottom: 0; right: 0; background: linear-gradient(to top left, transparent calc(50% - 1px), #EAB308 calc(50% - 1px), #EAB308 calc(50% + 1px), transparent calc(50% + 1px)); }
+
+/* ---------- Entrada escalonada del formulario ---------- */
+.auth-stagger > * { animation: authRise .6s cubic-bezier(.2, .8, .2, 1) both; }
+.auth-stagger > :nth-child(1) { animation-delay: .25s; }
+.auth-stagger > :nth-child(2) { animation-delay: .33s; }
+.auth-stagger > :nth-child(3) { animation-delay: .41s; }
+.auth-stagger > :nth-child(4) { animation-delay: .49s; }
+.auth-stagger > :nth-child(n+5) { animation-delay: .57s; }
+
+/* Si ya viste la intro en esta sesión, las páginas siguientes entran rápido */
+.auth-quick .auth-glass,
+.auth-quick .auth-corner,
+.auth-quick .auth-stagger > * {
+    animation-duration: .25s !important;
+    animation-delay: 0s !important;
+}
+
+/* ---------- Inputs y botón ---------- */
+input.auth-input {
+    color-scheme: dark;
+    transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+}
+input.auth-input:hover { border-color: rgba(255, 255, 255, .35); }
+input.auth-input:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, .16);
+    border-color: #60A5FA;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .45);
+}
+input.auth-input:-webkit-autofill {
+    -webkit-text-fill-color: #fff;
+    -webkit-box-shadow: 0 0 0 1000px #1E3A8A inset;
+    caret-color: #fff;
+}
+div:has(> input.auth-input:focus) > span { color: #93C5FD; }
+
+.auth-btn {
+    position: relative;
+    overflow: hidden;
+    transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.auth-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px -10px rgba(37, 99, 235, .85);
+}
+.auth-btn:active:not(:disabled) { transform: translateY(0) scale(.99); }
+
+.el-shine::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .35), transparent);
+    transform: skewX(-20deg);
+    transition: left .7s ease;
+    pointer-events: none;
+}
+.el-shine:hover:not(:disabled)::after { left: 130%; }
+
+/* ==========================================================================
+   Sabio, el búho
+   Estados (los pone auth.js sobre [data-mascot-scene]):
+   is-cover  → se tapa los ojos (contraseña oculta)
+   is-peek   → destapa un ojo (contraseña visible)
+   is-happy  → ojos felices (al enviar)
+   is-error  → sacude la cabeza (credenciales incorrectas)
+   lamp-off  → se apagó la lámpara
+   ========================================================================== */
+.auth-scene {
+    isolation: isolate;
+    background:
+        radial-gradient(120% 80% at 50% 0%, rgba(96, 165, 250, .16), transparent 60%),
+        linear-gradient(180deg, rgba(15, 23, 42, .35), rgba(23, 37, 84, .2));
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+@media (min-width: 1024px) {
+    .auth-scene { border-bottom: 0; border-right: 1px solid rgba(255, 255, 255, .1); }
+}
+.auth-scene::before {            /* oscuridad cuando se apaga la lámpara */
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: rgba(2, 6, 23, .6);
+    opacity: 0;
+    transition: opacity .5s ease;
+    pointer-events: none;
+}
+.auth-scene.lamp-off::before { opacity: 1; }
+
+.auth-scene svg { overflow: visible; }
+
+.mascot-lamp { transform-origin: 160px 0; animation: sabioSwing 7s ease-in-out infinite; }
+.mascot-cone { animation: sabioCone 5s ease-in-out infinite; transition: opacity .4s ease; }
+.mascot-bulb-glow { transform-box: fill-box; transform-origin: center; animation: sabioGlow 3.2s ease-in-out infinite; transition: opacity .4s ease; }
+.mascot-bulb { transition: fill .3s ease; }
+.lamp-off .mascot-cone,
+.lamp-off .mascot-bulb-glow { opacity: 0; animation: none; }
+.lamp-off .mascot-bulb { fill: #475569; }
+[data-lamp-toggle] { transition: transform .16s ease; }
+.is-pulled [data-lamp-toggle] { transform: translateY(8px); }
+
+.mascot-bot { animation: sabioFloat 5s ease-in-out infinite; transition: filter .5s ease; }
+.lamp-off .mascot-bot { filter: brightness(.55) saturate(.8); }
+
+.mascot-blink { transform-box: fill-box; transform-origin: center; animation: sabioWake 1s .5s both, sabioBlink 6s 2s infinite; }
+[data-pupil], [data-pupil-shine], [data-eye-ball] { transition: transform .14s ease-out; }
+.eye-closed { display: none; }
+
+.mascot-tassel { transform-origin: 212px 204px; animation: sabioTassel 4s ease-in-out infinite; }
+
+.mascot-hand {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    transition: transform .5s cubic-bezier(.34, 1.4, .5, 1);
+}
+/* cada ala sube hasta su ojo (ojos en x=135 y x=185, y=252) */
+.is-cover .hand-l { transform: translate(37px, -54px) rotate(10deg) scale(1.2, .95); }
+.is-cover .hand-r { transform: translate(-37px, -54px) rotate(-10deg) scale(1.2, .95); }
+/* contraseña visible: el ala derecha baja y deja ver ese ojo */
+.is-peek  .hand-r { transform: translate(-4px, -8px) rotate(-6deg); }
+
+.is-happy .eye-open { display: none; }
+.is-happy .eye-closed { display: block; }
+.is-happy .mascot-tassel { animation-duration: 1s; }
+
+.is-error > svg { animation: sabioShake .5s ease; }
+.is-error [data-mascot-message] span {
+    border-color: rgba(248, 113, 113, .5);
+    background: rgba(220, 38, 38, .22);
+}
+
+[data-mascot-message] span { transition: background-color .3s ease, border-color .3s ease; }
+[data-mascot-message] span.pop { animation: authPop .35s ease; }
+
+.sabio-mini .mascot-bot,
+.sabio-mini .mascot-lamp { animation: none; }
+
+/* ---------- Keyframes ---------- */
+@keyframes authFlow   { to { stroke-dashoffset: -1820; } }
+@keyframes authDrift  { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, -24px) scale(1.08); } }
+@keyframes authBob    { from { transform: translateY(0) rotate(var(--r0, -6deg)); } to { transform: translateY(-14px) rotate(var(--r1, 6deg)); } }
+@keyframes authCardIn { from { opacity: 0; transform: translateY(24px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes authRise   { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes authCornerIn { from { opacity: 0; } to { opacity: .9; } }
+@keyframes authSpin   { to { transform: rotate(360deg); } }
+@keyframes authPop    { 0% { transform: scale(.92); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+
+@keyframes sabioFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes sabioSwing { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+@keyframes sabioCone  { 0%, 100% { opacity: .85; } 50% { opacity: 1; } }
+@keyframes sabioGlow  { 0%, 100% { transform: scale(1); opacity: .65; } 50% { transform: scale(1.25); opacity: .9; } }
+@keyframes sabioBlink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
+@keyframes sabioWake  { from { transform: scaleY(.08); } to { transform: scaleY(1); } }
+@keyframes sabioTassel{ 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(8deg); } }
+@keyframes sabioShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-9px) rotate(-2deg); } 40% { transform: translateX(8px) rotate(2deg); } 60% { transform: translateX(-6px); } 80% { transform: translateX(4px); } }
+
+
+/* ==========================================================================
+   Apertura del login (html.auth-intro, solo en /login)
+   0.0–1.2s  aparece un cristal pequeño con el logo brillando
+   1.2–2.4s  el cristal se abre hasta ser la tarjeta completa
+   1.9s →    entran el búho y el formulario
+   ========================================================================== */
+.auth-intro-logo { display: none; }
+
+.auth-intro .auth-glass { animation: authOpen 2.4s both; }
+
+.auth-intro .auth-glass > .grid { animation: authFade .6s 1.8s both; }
+
+.auth-intro .auth-intro-logo {
+    display: flex;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 20;
+    width: 60px;
+    height: 60px;
+    margin: -30px 0 0 -30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, .35);
+    background: rgba(255, 255, 255, .08);
+    color: #FDE68A;
+    font-size: 24px;
+    pointer-events: none;
+    animation: authLogo 2.4s both;
+}
+/* destello dorado detrás del logo */
+.auth-intro .auth-intro-logo::before {
+    content: '';
+    position: absolute;
+    inset: -70px;
+    z-index: -1;
+    background: radial-gradient(circle, rgba(253, 224, 71, .6) 0%, rgba(234, 179, 8, .2) 38%, transparent 68%);
+    animation: authGlow 1.1s ease-in-out infinite alternate;
+}
+/* reflejo diagonal sobre el cristal */
+.auth-intro .auth-intro-logo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(to bottom right, transparent calc(50% - .5px), rgba(255, 255, 255, .6) 50%, transparent calc(50% + .5px));
+}
+
+/* los elementos internos esperan a que la tarjeta se abra */
+.auth-intro .auth-stagger > :nth-child(1) { animation-delay: 1.95s; }
+.auth-intro .auth-stagger > :nth-child(2) { animation-delay: 2.03s; }
+.auth-intro .auth-stagger > :nth-child(3) { animation-delay: 2.11s; }
+.auth-intro .auth-stagger > :nth-child(4) { animation-delay: 2.19s; }
+.auth-intro .auth-stagger > :nth-child(n+5) { animation-delay: 2.27s; }
+.auth-intro .auth-corner { animation-delay: 2.1s; }
+.auth-intro .mascot-blink { animation-delay: 2.2s, 3.6s; }
+
+@keyframes authOpen {
+    0%   { opacity: 0; transform: scale(.85);
+           clip-path: polygon(calc(50% - 30px) calc(50% - 42px), calc(50% + 42px) calc(50% - 42px), calc(50% + 42px) calc(50% + 30px), calc(50% + 30px) calc(50% + 42px), calc(50% - 42px) calc(50% + 42px), calc(50% - 42px) calc(50% - 30px)); }
+    18%  { opacity: 1; transform: scale(1); animation-timing-function: linear;
+           clip-path: polygon(calc(50% - 30px) calc(50% - 42px), calc(50% + 42px) calc(50% - 42px), calc(50% + 42px) calc(50% + 30px), calc(50% + 30px) calc(50% + 42px), calc(50% - 42px) calc(50% + 42px), calc(50% - 42px) calc(50% - 30px)); }
+    48%  { opacity: 1; transform: scale(1); animation-timing-function: cubic-bezier(.76, 0, .2, 1);
+           clip-path: polygon(calc(50% - 30px) calc(50% - 42px), calc(50% + 42px) calc(50% - 42px), calc(50% + 42px) calc(50% + 30px), calc(50% + 30px) calc(50% + 42px), calc(50% - 42px) calc(50% + 42px), calc(50% - 42px) calc(50% - 30px)); }
+    100% { opacity: 1; transform: none;
+           clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+}
+@keyframes authLogo {
+    0%   { opacity: 0; transform: scale(.6); }
+    18%  { opacity: 1; transform: scale(1); }
+    48%  { opacity: 1; transform: scale(1); }
+    75%  { opacity: 0; transform: scale(1.5); }
+    100% { opacity: 0; transform: scale(1.5); }
+}
+@keyframes authGlow { from { opacity: .55; transform: scale(.9); } to { opacity: 1; transform: scale(1.12); } }
+@keyframes authFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- Accesibilidad: sin movimiento si el sistema lo pide ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .auth-bg, .auth-bg *, .auth-bg *::before, .auth-bg *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        animation-delay: 0s !important;
+        transition-duration: .01ms !important;
+    }
+}
