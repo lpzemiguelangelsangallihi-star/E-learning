@@ -10,7 +10,7 @@
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const MESSAGES = {
-    typing: 'Te sigo con la mirada.',
+     typing: 'Te sigo con la mirada.',
     cover: 'No miro, lo prometo.',
     peek: 'Solo echaré un vistazo…',
     happy: '¡Vamos a estudiar!',

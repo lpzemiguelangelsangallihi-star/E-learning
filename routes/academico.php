@@ -114,3 +114,5 @@ Route::middleware([
         )->name('lessons.show');
 
     });
+
+require __DIR__.'/evaluaciones.php';
