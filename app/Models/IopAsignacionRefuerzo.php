@@ -15,6 +15,11 @@ class IopAsignacionRefuerzo extends Model
         'estado',
         'asignado_en',
         'completado_en',
+        'respuesta_estudiante',
+        'entregado_en',
+        'retroalimentacion',
+        'revisado_por',
+        'revisado_en',
     ];
 
     protected $casts = [
@@ -22,6 +27,9 @@ class IopAsignacionRefuerzo extends Model
         'ejercicio_id' => 'integer',
         'asignado_en' => 'datetime',
         'completado_en' => 'datetime',
+        'entregado_en' => 'datetime',
+        'revisado_en' => 'datetime',
+        'revisado_por' => 'integer',
     ];
 
     public function recomendacion(): BelongsTo
@@ -37,6 +45,14 @@ class IopAsignacionRefuerzo extends Model
         return $this->belongsTo(
             IopEjercicioRefuerzo::class,
             'ejercicio_id'
+        );
+    }
+
+    public function revisor(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'revisado_por'
         );
     }
 }

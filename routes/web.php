@@ -214,22 +214,12 @@ Route::middleware([
         Route::delete('/cursos/{curso}',[ProfessorCourseController::class, 'destroy'])->name('courses.destroy');
 
 
-        Route::patch(
-            '/cursos/{curso}/estado',
-            [ProfessorCourseController::class, 'toggleStatus']
-        )->name('courses.toggle-status');
+        Route::patch('/cursos/{curso}/estado',[ProfessorCourseController::class, 'toggleStatus'])->name('courses.toggle-status');
+        Route::get('/cursos/{curso}/estudiantes',[ProfessorCourseController::class, 'students'])->name('courses.students');
+        Route::get('/estadisticas',[ProfessorStatisticsController::class, 'index'])->name('statistics.index');
 
 
-        Route::get(
-            '/cursos/{curso}/estudiantes',
-            [ProfessorCourseController::class, 'students']
-        )->name('courses.students');
-
-
-        Route::get(
-            '/estadisticas',
-            [ProfessorStatisticsController::class, 'index']
-        )->name('statistics.index');
+        Route::get('/iop/refuerzos',fn () => view('professor.iop.refuerzos'))->name('iop.refuerzos');
 
     });
 
@@ -314,14 +304,26 @@ Route::middleware([
 
 require __DIR__.'/academico.php';
 
-/*IOP */
-Route::get(
-    '/iop/lecciones/{leccionId}/seguimiento',
-    function (int $leccionId) {
-        return view('iop.seguimiento', [
-            'leccionId' => $leccionId,
-        ]);
-    }
-)
-->middleware('auth')
-->name('iop.seguimiento');
+
+/*
+|--------------------------------------------------------------------------
+| INVESTIGACIÓN OPERATIVA II - ESTUDIANTE
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+    'role:estudiante',
+])
+    ->get(
+        '/iop/lecciones/{leccionId}/seguimiento',
+        function (int $leccionId) {
+            return view('iop.seguimiento', [
+                'leccionId' => $leccionId,
+            ]);
+        }
+    )
+    ->whereNumber('leccionId')
+    ->name('iop.seguimiento');
