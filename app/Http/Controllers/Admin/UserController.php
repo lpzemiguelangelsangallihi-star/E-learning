@@ -5,12 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Rol;
 use App\Models\User;
+use App\Services\UserDeletionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    public function __construct(private UserDeletionService $usuarios) {}
+
     public function index(Request $request)
     {
         $search =
@@ -20,16 +25,13 @@ class UserController extends Controller
                     ->toString()
             );
 
-
         $rolId =
             $request->integer('rol');
-
 
         $estado =
             $request
                 ->string('estado')
                 ->toString();
-
 
         $usuarios = User::query()
 
@@ -75,11 +77,10 @@ class UserController extends Controller
 
             ->when(
                 $rolId,
-                fn ($query) =>
-                    $query->where(
-                        'rol_id',
-                        $rolId
-                    )
+                fn ($query) => $query->where(
+                    'rol_id',
+                    $rolId
+                )
             )
 
             ->when(
@@ -91,11 +92,10 @@ class UserController extends Controller
                     ],
                     true
                 ),
-                fn ($query) =>
-                    $query->where(
-                        'estado',
-                        $estado
-                    )
+                fn ($query) => $query->where(
+                    'estado',
+                    $estado
+                )
             )
 
             ->orderByDesc('creado_en')
@@ -104,11 +104,9 @@ class UserController extends Controller
 
             ->withQueryString();
 
-
         $roles = Rol::query()
             ->orderBy('nombre')
             ->get();
-
 
         return view(
             'admin.users.index',
@@ -122,20 +120,17 @@ class UserController extends Controller
         );
     }
 
-
     public function create()
     {
         $roles = Rol::query()
             ->orderBy('nombre')
             ->get();
 
-
         return view(
             'admin.users.create',
             compact('roles')
         );
     }
-
 
     public function store(Request $request)
     {
@@ -189,49 +184,39 @@ class UserController extends Controller
 
             ]);
 
-
         User::create([
 
-            'rol_id' =>
-                $validated['rol_id'],
+            'rol_id' => $validated['rol_id'],
 
-            'nombre' =>
-                trim($validated['nombre']),
+            'nombre' => trim($validated['nombre']),
 
-            'apellido_paterno' =>
+            'apellido_paterno' => trim(
+                $validated[
+                    'apellido_paterno'
+                ]
+            ),
+
+            'apellido_materno' => trim(
+                $validated[
+                    'apellido_materno'
+                ]
+            ),
+
+            'email' => mb_strtolower(
                 trim(
-                    $validated[
-                        'apellido_paterno'
-                    ]
-                ),
+                    $validated['email']
+                )
+            ),
 
-            'apellido_materno' =>
-                trim(
-                    $validated[
-                        'apellido_materno'
-                    ]
-                ),
+            'password' => Hash::make(
+                $validated['password']
+            ),
 
-            'email' =>
-                mb_strtolower(
-                    trim(
-                        $validated['email']
-                    )
-                ),
+            'estado' => $validated['estado'],
 
-            'password' =>
-                Hash::make(
-                    $validated['password']
-                ),
-
-            'estado' =>
-                $validated['estado'],
-
-            'email_verified_at' =>
-                now(),
+            'email_verified_at' => now(),
 
         ]);
-
 
         return redirect()
 
@@ -245,13 +230,11 @@ class UserController extends Controller
             );
     }
 
-
     public function edit(User $user)
     {
         $roles = Rol::query()
             ->orderBy('nombre')
             ->get();
-
 
         return view(
             'admin.users.edit',
@@ -261,7 +244,6 @@ class UserController extends Controller
             )
         );
     }
-
 
     public function update(
         Request $request,
@@ -324,44 +306,36 @@ class UserController extends Controller
 
             ]);
 
-
         $data = [
 
-            'rol_id' =>
-                $validated['rol_id'],
+            'rol_id' => $validated['rol_id'],
 
-            'nombre' =>
+            'nombre' => trim(
+                $validated['nombre']
+            ),
+
+            'apellido_paterno' => trim(
+                $validated[
+                    'apellido_paterno'
+                ]
+            ),
+
+            'apellido_materno' => trim(
+                $validated[
+                    'apellido_materno'
+                ]
+            ),
+
+            'email' => mb_strtolower(
                 trim(
-                    $validated['nombre']
-                ),
+                    $validated['email']
+                )
+            ),
 
-            'apellido_paterno' =>
-                trim(
-                    $validated[
-                        'apellido_paterno'
-                    ]
-                ),
-
-            'apellido_materno' =>
-                trim(
-                    $validated[
-                        'apellido_materno'
-                    ]
-                ),
-
-            'email' =>
-                mb_strtolower(
-                    trim(
-                        $validated['email']
-                    )
-                ),
-
-            'estado' =>
-                $validated['estado'],
+            'estado' => $validated['estado'],
         ];
 
-
-        if (!empty(
+        if (! empty(
             $validated['password']
         )) {
 
@@ -372,9 +346,7 @@ class UserController extends Controller
 
         }
 
-
         $user->update($data);
-
 
         return redirect()
 
@@ -387,7 +359,6 @@ class UserController extends Controller
                 'Usuario actualizado correctamente.'
             );
     }
-
 
     public function toggleStatus(
         User $user
@@ -402,23 +373,26 @@ class UserController extends Controller
 
         }
 
+        $nuevoEstado = $user->estado === 'activo'
+            ? 'inactivo'
+            : 'activo';
 
         $user->update([
-
-            'estado' =>
-                $user->estado === 'activo'
-                    ? 'inactivo'
-                    : 'activo',
-
+            'estado' => $nuevoEstado,
         ]);
 
+        // Cierra de inmediato las sesiones abiertas del usuario desactivado.
+        if ($nuevoEstado === 'inactivo' && Schema::hasTable('sessions')) {
+            DB::table('sessions')
+                ->where('user_id', $user->id)
+                ->delete();
+        }
 
         return back()->with(
             'success',
             'Estado actualizado correctamente.'
         );
     }
-
 
     public function destroy(
         User $user
@@ -433,9 +407,18 @@ class UserController extends Controller
 
         }
 
+        $dependencias = $this->usuarios->academicDependencies($user);
 
-        $user->delete();
+        if ($dependencias !== []) {
+            return back()->with(
+                'error',
+                'No se puede eliminar al usuario porque todavía es responsable de '
+                    .implode(', ', $dependencias)
+                    .'. Reasigna o elimina ese contenido primero.'
+            );
+        }
 
+        $this->usuarios->delete($user);
 
         return redirect()
 

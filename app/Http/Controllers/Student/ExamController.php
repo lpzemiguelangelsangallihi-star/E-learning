@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Gate;
 /** Flujo del estudiante: ver examen, iniciar, resolver y ver resultado. */
 class ExamController extends Controller
 {
-    public function __construct(private ExamAttemptService $intentos)
-    {
-    }
+    public function __construct(private ExamAttemptService $intentos) {}
 
     public function show(Examen $examen)
     {

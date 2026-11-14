@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Storage;
 /** Tareas del estudiante: ver instrucciones y entregar. */
 class TaskController extends Controller
 {
-    public function __construct(private TaskService $tareas)
-    {
-    }
+    public function __construct(private TaskService $tareas) {}
 
     public function show(Tarea $tarea)
     {

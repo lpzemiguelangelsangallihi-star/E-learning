@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use App\Models\Materia;
 use App\Services\BitacoraService;
+use App\Services\CourseFileService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class CourseController extends Controller
 {
+    public function __construct(private CourseFileService $files) {}
+
     public function index(Request $request)
     {
         $search = trim(
@@ -22,7 +24,6 @@ class CourseController extends Controller
         $estado = $request
             ->string('estado')
             ->toString();
-
 
         $cursos = Curso::query()
             ->with([
@@ -60,11 +61,10 @@ class CourseController extends Controller
 
             ->when(
                 $materiaId,
-                fn ($query) =>
-                    $query->where(
-                        'materia_id',
-                        $materiaId
-                    )
+                fn ($query) => $query->where(
+                    'materia_id',
+                    $materiaId
+                )
             )
 
             ->when(
@@ -77,23 +77,20 @@ class CourseController extends Controller
                     ],
                     true
                 ),
-                fn ($query) =>
-                    $query->where(
-                        'estado',
-                        $estado
-                    )
+                fn ($query) => $query->where(
+                    'estado',
+                    $estado
+                )
             )
 
             ->orderByDesc('creado_en')
             ->paginate(10)
             ->withQueryString();
 
-
         $materias = Materia::query()
             ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
-
 
         return view(
             'admin.courses.index',
@@ -107,7 +104,6 @@ class CourseController extends Controller
         );
     }
 
-
     public function toggleVisibility(Curso $curso)
     {
         if ($curso->estado === 'borrador') {
@@ -117,19 +113,15 @@ class CourseController extends Controller
             );
         }
 
-
         $curso->update([
-            'estado' =>
-                $curso->estado === 'publicado'
+            'estado' => $curso->estado === 'publicado'
                     ? 'oculto'
                     : 'publicado',
         ]);
 
-
         BitacoraService::registrar(
             "Cambió la visibilidad del curso {$curso->titulo} a {$curso->estado}."
         );
-
 
         return back()->with(
             'success',
@@ -138,7 +130,6 @@ class CourseController extends Controller
                 : 'Curso ocultado correctamente.'
         );
     }
-
 
     public function destroy(Curso $curso)
     {
@@ -154,15 +145,14 @@ class CourseController extends Controller
             );
         }
 
-
         $tituloCurso = $curso->titulo;
-        $curso->delete();
 
+        $this->files->deleteForCourse($curso);
+        $curso->delete();
 
         BitacoraService::registrar(
             "Eliminó el curso {$tituloCurso}."
         );
-
 
         return redirect()
             ->route('admin.courses.index')

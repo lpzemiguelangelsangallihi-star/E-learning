@@ -37,8 +37,8 @@
                 <div class="mt-5 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm text-slate-700">{{ $tarea->instrucciones }}</div>
             @endif
 
-            @if ($tarea->archivo)
-                <a href="{{ asset('storage/'.$tarea->archivo) }}" target="_blank" rel="noopener"
+            @if ($tarea->archivo_url)
+                <a href="{{ $tarea->archivo_url }}" target="_blank" rel="noopener"
                     class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#2563EB] hover:underline">
                     <i class="fa-solid fa-paperclip" aria-hidden="true"></i> Archivo de apoyo
                 </a>
