@@ -11,13 +11,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class IntegracionEvaluacionIOPService
-{
-    public function __construct(
-        private NormalizadorCalificacionService $normalizador,
-        private RecomendacionService $recomendaciones,
-        private SeguimientoService $seguimientos
-    ) {}
-
+{ 
+        public function __construct(
+            private NormalizadorCalificacionService $normalizador,
+            private RecomendacionService $recomendaciones,
+            private SeguimientoService $seguimientos,
+            private ConsolidacionSeguimientoIOPService $consolidacion,
+            private AsignacionRefuerzoService $asignaciones,
+            private CicloRefuerzoService $ciclosRefuerzo
+        ) {}
     /**
      * Obtiene un intento finalizado y su nota en escala 0-100.
      */
@@ -74,6 +76,8 @@ class IntegracionEvaluacionIOPService
                     (int) $existente->intento_diagnostico_id
                     === (int) $intento->id
                 ) {
+                    $this->ciclosRefuerzo->registrarInicial(
+                        (int) $existente->id);
                     return $existente;
                 }
 
@@ -85,12 +89,18 @@ class IntegracionEvaluacionIOPService
                 ]);
             }
 
+            
             $recomendacion = $this->recomendaciones->generar(
                 (int) $intento->estudiante_id,
                 $leccionId,
                 (float) $nota
-            );
-
+            );             
+            // Asignar automáticamente el ejercicio que
+            // corresponde a la alternativa Maximin.
+            $this->asignaciones->asignar(
+                (int) $recomendacion->id
+            );             
+            // Iniciar el seguimiento académico.
             $seguimiento = $this->seguimientos->iniciar(
                 (int) $recomendacion->id
             );
@@ -98,7 +108,9 @@ class IntegracionEvaluacionIOPService
             $seguimiento->update([
                 'intento_diagnostico_id' => $intento->id,
             ]);
-
+            $this->ciclosRefuerzo->registrarInicial(
+                (int) $seguimiento->id
+            );
             return $seguimiento->refresh();
         });
     }
@@ -234,12 +246,62 @@ class IntegracionEvaluacionIOPService
                 }
             }
 
-            return $this->seguimientos->registrarEvaluacion(
+            
+             //VERIFICACIÓN DEL REFUERZO ACADÉMICo
+
+            $recomendacion = $seguimiento
+                ->recomendacionInicial()
+                ->with('asignacionRefuerzo')
+                ->first();
+
+            $asignacion = $recomendacion
+                ?->asignacionRefuerzo;
+
+            if (
+                !$asignacion ||
+                $asignacion->estado !== 'completado' ||
+                !$asignacion->completado_en ||
+                !$asignacion->revisado_por
+            ) {
+                throw ValidationException::withMessages([
+                    'refuerzo' =>
+                        'Debes completar y obtener la aprobación '
+                        .'del ejercicio de refuerzo antes de '
+                        .'realizar una evaluación de seguimiento.',
+                ]);
+            }
+
+            // Impide utilizar una evaluación realizada
+            // antes de que el profesor aprobara el refuerzo.
+            if (
+                !$intento->fecha_fin->greaterThan(
+                    $asignacion->completado_en
+                )
+            ) {
+                throw ValidationException::withMessages([
+                    'intento' =>
+                        'La evaluación debe haberse realizado '
+                        .'después de la aprobación del refuerzo.',
+                ]);
+            }
+
+
+            
+            $transicion = $this->seguimientos->registrarEvaluacion(
                 (int) $seguimiento->id,
                 (float) $nota,
                 'evaluacion',
                 $referencia
             );
+
+            // Comprobar si la nueva evaluación permite
+            // consolidar el aprendizaje en S4.
+            $this->consolidacion->consolidarSiCorresponde(
+                (int) $seguimiento->id
+            );
+
+            // Devolver el estado definitivo de la transición.
+            return $transicion->refresh();
         });
     }
 }

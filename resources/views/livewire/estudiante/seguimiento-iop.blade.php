@@ -67,7 +67,28 @@
 
         </div>
 
-       
+        @if ($seguimiento && $cicloRefuerzo)
+            <div class="rounded-lg border border-blue-200
+                        bg-blue-50 p-4">
+
+                <p class="text-sm font-semibold text-blue-900">
+                    Ciclo de refuerzo
+                    {{ $cicloRefuerzo->ciclo }}
+                </p>
+            
+                <p class="mt-1 text-sm text-blue-700">
+                    @if ($cicloRefuerzo->ciclo === 0)
+                        Actividad recomendada después
+                        de tu diagnóstico inicial.
+                    @else
+                        Nueva actividad recomendada
+                        según tu última evaluación.
+                    @endif
+                </p>
+            
+            </div>
+        @endif
+
         {{-- EJERCICIO DE REFUERZO ASIGNADO --}}
             
         <div class="rounded-lg border bg-white p-5">

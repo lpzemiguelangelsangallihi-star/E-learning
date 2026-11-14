@@ -105,6 +105,44 @@
             @endif
 
 
+            {{-- SEGUIMIENTO DE APRENDIZAJE IOP --}}
+                        
+            <x-ui.card>
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center
+                                    justify-center rounded-lg bg-blue-50
+                                    text-[#2563EB]">
+                            <i class="fa-solid fa-brain" aria-hidden="true"></i>
+                        </div>
+                    
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800">
+                                Seguimiento de aprendizaje
+                            </h2>
+                        
+                            <p class="mt-1 text-sm text-slate-500">
+                                Consulta tus recomendaciones, ejercicios de
+                                refuerzo y evolución académica mediante IOP.
+                            </p>
+                        </div>
+                    </div>
+                
+                    <a
+                        href="{{ route('iop.seguimiento', ['leccionId' => $leccion->id]) }}"
+                        class="inline-flex items-center gap-2 rounded-lg
+                               bg-[#2563EB] px-4 py-2.5 text-sm
+                               font-semibold text-white hover:bg-[#1D4ED8]"
+                    >
+                        <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                        Ver seguimiento
+                    </a>
+                
+                </div>
+            </x-ui.card>
+
+
             {{-- Navegación --}}
             <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
                 @if ($anterior)

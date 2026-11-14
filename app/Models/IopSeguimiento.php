@@ -64,4 +64,11 @@ class IopSeguimiento extends Model
             'seguimiento_id'
         );
     }
+    public function ciclosRefuerzo(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(
+            IopCicloRefuerzo::class,
+            'seguimiento_id'
+        )->orderBy('ciclo');
+    }
 }

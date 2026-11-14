@@ -79,14 +79,43 @@ class SeguimientoIOP extends Component
     
         // Obtener la recomendación inicial
         // y la asignación correspondiente.
-        $recomendacion = IopRecomendacion::query()
-            ->whereKey(
-                $seguimiento->recomendacion_inicial_id
-            )
-            ->where('estudiante_id', $estudiante->id)
-            ->where('leccion_id', $this->leccionId)
-            ->with('asignacionRefuerzo')
-            ->firstOrFail();
+        
+        // Buscar el ciclo de refuerzo más reciente.
+        // Solo se consideran ciclos del seguimiento
+        // correspondiente al estudiante autenticado.
+        $ciclo = $seguimiento->ciclosRefuerzo()
+            ->with('recomendacion.asignacionRefuerzo')
+            ->orderByDesc('ciclo')
+            ->first();
+
+        if ($ciclo) {
+            $recomendacion = $ciclo->recomendacion;
+        } else {
+            // Compatibilidad con seguimientos anteriores
+            // a la creación de la tabla de ciclos.
+            $recomendacion = IopRecomendacion::query()
+                ->whereKey(
+                    $seguimiento->recomendacion_inicial_id
+                )
+                ->where('estudiante_id', $estudiante->id)
+                ->where('leccion_id', $this->leccionId)
+                ->with('asignacionRefuerzo')
+                ->firstOrFail();
+        }
+
+        // Verificar que la recomendación recuperada
+        // realmente corresponda al estudiante y lección.
+        abort_unless(
+            $recomendacion &&
+            (int) $recomendacion->estudiante_id
+                === (int) $estudiante->id &&
+            (int) $recomendacion->leccion_id
+                === (int) $this->leccionId,
+            403
+        );
+
+        $asignacion = $recomendacion->asignacionRefuerzo;
+
     
         $asignacion = $recomendacion->asignacionRefuerzo;
     
@@ -132,25 +161,39 @@ class SeguimientoIOP extends Component
             ->first();
 
         // Recomendación correspondiente al seguimiento.
-        // La relación inicial evita mostrar una asignación
-        // que pertenezca a otra recomendación histórica.
-        $recomendacion = $seguimiento
-            ? IopRecomendacion::query()
+        
+        // Obtener el ciclo de refuerzo más reciente.
+        $cicloRefuerzo = $seguimiento
+            ? $seguimiento->ciclosRefuerzo()
+                ->with([
+                    'recomendacion.asignacionRefuerzo.ejercicio'
+                ])
+                ->orderByDesc('ciclo')
+                ->first()
+            : null;
+
+        // Mostrar la recomendación del ciclo vigente.
+        $recomendacion = $cicloRefuerzo
+            ?->recomendacion;
+
+        // Compatibilidad con seguimientos anteriores.
+        if (!$recomendacion && $seguimiento) {
+            $recomendacion = IopRecomendacion::query()
                 ->whereKey(
                     $seguimiento->recomendacion_inicial_id
                 )
                 ->where('estudiante_id', $estudianteId)
                 ->where('leccion_id', $this->leccionId)
                 ->with('asignacionRefuerzo.ejercicio')
-                ->first()
-            : null;
+                ->first();
+        }
 
-        // Asignación ya registrada en MySQL.
-        // No creamos nuevas asignaciones desde render().
-        $asignacion = $recomendacion?->asignacionRefuerzo;
+        $asignacion = $recomendacion
+            ?->asignacionRefuerzo;
 
-        // Ejercicio correspondiente a la asignación.
-        $ejercicio = $asignacion?->ejercicio;
+        $ejercicio = $asignacion
+            ?->ejercicio;
+
 
         // Última matriz basada en evaluaciones reales.
         $matrizReal = IopMatrizMarkov::query()
@@ -194,6 +237,7 @@ class SeguimientoIOP extends Component
                 'ejercicio' => $ejercicio,
                 'matrizReal' => $matrizReal,
                 'proyeccion' => $proyeccion,
+                'cicloRefuerzo' => $cicloRefuerzo,
             ]
         );
     }

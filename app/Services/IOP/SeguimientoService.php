@@ -134,6 +134,26 @@ class SeguimientoService
                 ->lockForUpdate()
                 ->findOrFail($seguimientoId);
     
+    
+            // Una evaluación real no debe registrarse dos veces.
+            if ($referenciaExterna !== null) {
+                $existente = IopTransicion::where(
+                    'referencia_externa',
+                    $referenciaExterna
+                )->first();
+    
+                if ($existente) {
+                    if ( (int) $existente->seguimiento_id !== (int) $seguimiento->id) {
+                        throw ValidationException::withMessages([
+                            'referencia_externa' =>
+                                'La evaluación pertenece a otro seguimiento.',
+                        ]);
+                    }
+    
+                    return $existente;
+                }
+            }
+
             if (!$seguimiento->activo) {
                 throw ValidationException::withMessages([
                     'seguimiento' => 'El seguimiento está cerrado.',
@@ -145,25 +165,6 @@ class SeguimientoService
                 throw ValidationException::withMessages([
                     'estado' => 'El estudiante ya alcanzó S4.',
                 ]);
-            }
-    
-            // Una evaluación real no debe registrarse dos veces.
-            if ($referenciaExterna !== null) {
-                $existente = IopTransicion::where(
-                    'referencia_externa',
-                    $referenciaExterna
-                )->first();
-    
-                if ($existente) {
-                    if ($existente->seguimiento_id !== $seguimiento->id) {
-                        throw ValidationException::withMessages([
-                            'referencia_externa' =>
-                                'La evaluación pertenece a otro seguimiento.',
-                        ]);
-                    }
-    
-                    return $existente;
-                }
             }
     
             $estadoAnterior = $seguimiento->estado_actual;
