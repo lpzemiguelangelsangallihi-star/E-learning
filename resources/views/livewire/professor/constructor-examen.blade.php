@@ -112,6 +112,19 @@
                 @error('puntaje_maximo') <p class="mt-1 text-xs text-[#DC2626]">{{ $message }}</p> @enderror
             </div>
 
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Tipo de evaluación IOP</label>
+                <select wire:model="tipo_iop" @disabled($bloqueado) class="w-full rounded-lg border-slate-300 text-sm focus:border-[#2563EB] focus:ring-[#2563EB] disabled:bg-slate-100">
+                    @foreach ($tiposIop as $valor => $etiqueta)
+                        <option value="{{ $valor }}">{{ $etiqueta }}</option>
+                    @endforeach
+                </select>
+                @error('tipo_iop') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                @if ($bloqueado)
+                    <p class="mt-1 text-xs text-slate-500">Bloqueado: el examen ya tiene intentos.</p>
+                @endif
+            </div>
+
             <div class="flex items-end">
                 <label class="flex items-center gap-2 text-sm text-slate-700">
                     <input type="checkbox" wire:model="mostrar_correctas" class="rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]">

@@ -1,8 +1,3 @@
-@php
-    // Solo se enlazan URLs http(s); evita esquemas como javascript:
-    $esUrlSegura = fn (?string $url) => $url && \Illuminate\Support\Str::startsWith($url, ['http://', 'https://']);
-@endphp
-
 <x-student-layout
     :title="$leccion->titulo"
     :description="$leccion->modulo->titulo"
@@ -75,9 +70,7 @@
                                     default        => 'fa-solid fa-paperclip',
                                 };
 
-                                $enlace = $esUrlSegura($material->url)
-                                    ? $material->url
-                                    : ($material->archivo ? asset('storage/' . ltrim($material->archivo, '/')) : null);
+                                $enlace = $material->enlace;
                             @endphp
 
                             <li class="flex items-center gap-4 rounded-lg border border-slate-200 p-4">

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,8 +19,14 @@ return Application::configure(
     ->withMiddleware(function (Middleware $middleware) {
 
         $middleware->alias([
-            'role' =>
-                \App\Http\Middleware\RoleMiddleware::class,
+            'role' => RoleMiddleware::class,
+
+            'active' => EnsureUserIsActive::class,
+        ]);
+
+        // Toda petición web comprueba que la cuenta siga activa.
+        $middleware->web(append: [
+            EnsureUserIsActive::class,
         ]);
 
     })

@@ -29,17 +29,19 @@ class Video extends Model
 
     /**
      * Un video es "local" cuando el profesor subió el archivo
-     * (en `url` se guarda la ruta dentro del disco public).
+     * (en `url` se guarda la ruta dentro del disco privado).
      */
     public function getEsLocalAttribute(): bool
     {
         return ! preg_match('#^https?://#i', (string) $this->url);
     }
 
-    /** URL del archivo local servido desde /storage. */
+    /** URL autorizada del archivo local (nunca se expone /storage). */
     public function getArchivoUrlAttribute(): ?string
     {
-        return $this->es_local ? asset('storage/'.$this->url) : null;
+        return $this->es_local && $this->exists
+            ? route('files.video', $this->id)
+            : null;
     }
 
     /**

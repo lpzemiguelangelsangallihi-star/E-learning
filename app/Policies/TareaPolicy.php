@@ -26,7 +26,7 @@ class TareaPolicy
 
         $curso = $tarea->leccion?->modulo?->curso;
 
-        if (! $curso || $curso->estado !== 'publicado') {
+        if (! $curso || $curso->estado !== 'publicado' || $tarea->leccion?->modulo?->estado !== 'activo') {
             return false;
         }
 

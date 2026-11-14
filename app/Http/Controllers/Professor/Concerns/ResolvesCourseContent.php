@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Professor\Concerns;
 use App\Models\Curso;
 use App\Models\Leccion;
 use App\Models\Modulo;
+use App\Services\CourseFileService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * Utilidades compartidas por los controladores de contenido del profesor:
@@ -104,17 +104,7 @@ trait ResolvesCourseContent
     /** Elimina un tema con sus videos, materiales y progreso (y archivos). */
     protected function deleteLessonCascade(Leccion $leccion): void
     {
-        foreach ($leccion->materiales as $material) {
-            if ($material->archivo) {
-                Storage::disk('public')->delete($material->archivo);
-            }
-        }
-
-        foreach ($leccion->videos as $video) {
-            if ($video->es_local) {
-                Storage::disk('public')->delete($video->url);
-            }
-        }
+        app(CourseFileService::class)->deleteForLesson($leccion);
 
         $leccion->materiales()->delete();
         $leccion->videos()->delete();

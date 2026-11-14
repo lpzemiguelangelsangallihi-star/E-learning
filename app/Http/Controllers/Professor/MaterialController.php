@@ -9,8 +9,8 @@ use App\Models\Leccion;
 use App\Models\Material;
 use App\Models\Modulo;
 use App\Models\Video;
+use App\Services\CourseFileService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -23,6 +23,8 @@ use Illuminate\Validation\ValidationException;
 class MaterialController extends Controller
 {
     use ResolvesCourseContent;
+
+    public function __construct(private CourseFileService $files) {}
 
     public function index(Curso $curso, Modulo $modulo, Leccion $leccion)
     {
@@ -65,7 +67,7 @@ class MaterialController extends Controller
                     'titulo' => $titulo,
                     'descripcion' => $descripcion,
                     'tipo' => $this->tipoPorExtension($file->getClientOriginalExtension()),
-                    'archivo' => $file->store("materiales/lecciones/{$leccion->id}", 'public'),
+                    'archivo' => $file->store("materiales/lecciones/{$leccion->id}", 'local'),
                 ]);
 
                 $mensaje = 'Archivo agregado correctamente.';
@@ -115,7 +117,7 @@ class MaterialController extends Controller
                     'titulo' => $titulo,
                     'descripcion' => $descripcion,
                     'url' => $tieneArchivo
-                        ? $request->file('video_archivo')->store("videos/lecciones/{$leccion->id}", 'public')
+                        ? $request->file('video_archivo')->store("videos/lecciones/{$leccion->id}", 'local')
                         : $request->input('video_url'),
                     'duracion' => (int) $request->input('duracion', 0),
                     'orden' => ((int) $leccion->videos()->max('orden')) + 1,
@@ -136,9 +138,7 @@ class MaterialController extends Controller
             abort(404);
         }
 
-        if ($material->archivo) {
-            Storage::disk('public')->delete($material->archivo);
-        }
+        $this->files->delete($material->archivo);
 
         $material->delete();
 
@@ -154,7 +154,7 @@ class MaterialController extends Controller
         }
 
         if ($video->es_local) {
-            Storage::disk('public')->delete($video->url);
+            $this->files->delete($video->url);
         }
 
         $video->delete();

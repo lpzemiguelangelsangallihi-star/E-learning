@@ -58,6 +58,8 @@
                     </form>
                 @elseif ($totalPreguntas === 0)
                     <x-ui.alert type="info">Este examen todavía no tiene preguntas.</x-ui.alert>
+                @elseif ($examen->estado !== 'publicado')
+                    <x-ui.alert type="info">Este examen está cerrado y ya no recibe nuevos intentos. Puedes consultar tus resultados.</x-ui.alert>
                 @else
                     <x-ui.alert type="info">Ya usaste todos tus intentos para este examen.</x-ui.alert>
                 @endif

@@ -30,6 +30,6 @@ class Notificacion extends Model
 
     public function usuario(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'User_id');
+        return $this->belongsTo(User::class, 'usuario_id');
     }
 }

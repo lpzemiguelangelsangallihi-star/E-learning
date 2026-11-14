@@ -11,6 +11,23 @@ class UsersSeeder extends Seeder
 {
     public function run(): void
     {
+        // Nunca crear cuentas demo fuera de desarrollo o pruebas.
+        if (! app()->environment(['local', 'testing'])) {
+            $this->command?->warn(
+                'UsersSeeder omitido: solo se ejecuta en entornos local/testing.'
+            );
+
+            return;
+        }
+
+        $password = (string) config('demo.password');
+
+        if ($password === '') {
+            throw new RuntimeException(
+                'Define DEMO_USER_PASSWORD en el archivo .env para crear los usuarios demo.'
+            );
+        }
+
         $users = [
             [
                 'rol' => 'administrador',
@@ -37,20 +54,17 @@ class UsersSeeder extends Seeder
             ],
         ];
 
-
         foreach ($users as $user) {
 
             $rolId = DB::table('roles')
                 ->where('nombre', $user['rol'])
                 ->value('id');
 
-
-            if (!$rolId) {
+            if (! $rolId) {
                 throw new RuntimeException(
                     "No existe el rol {$user['rol']}."
                 );
             }
-
 
             DB::table('users')->updateOrInsert(
                 [
@@ -59,23 +73,17 @@ class UsersSeeder extends Seeder
                 [
                     'rol_id' => $rolId,
 
-                    'nombre' =>
-                        $user['nombre'],
+                    'nombre' => $user['nombre'],
 
-                    'apellido_paterno' =>
-                        $user['apellido_paterno'],
+                    'apellido_paterno' => $user['apellido_paterno'],
 
-                    'apellido_materno' =>
-                        $user['apellido_materno'],
+                    'apellido_materno' => $user['apellido_materno'],
 
-                    'password' =>
-                        Hash::make('password'),
+                    'password' => Hash::make($password),
 
-                    'email_verified_at' =>
-                        now(),
+                    'email_verified_at' => now(),
 
-                    'estado' =>
-                        'activo',
+                    'estado' => 'activo',
                 ]
             );
         }

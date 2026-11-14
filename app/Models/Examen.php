@@ -8,6 +8,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Examen extends Model
 {
+    public const IOP_NINGUNO = 'ninguno';
+
+    public const IOP_DIAGNOSTICO = 'diagnostico';
+
+    public const IOP_REFUERZO = 'refuerzo';
+
+    public const IOP_ORDINARIA = 'ordinaria';
+
+    public const TIPOS_IOP = [
+        self::IOP_NINGUNO => 'Sin IOP',
+        self::IOP_DIAGNOSTICO => 'Diagnóstico (inicia el seguimiento IOP)',
+        self::IOP_REFUERZO => 'Evaluación de refuerzo (registra avance IOP)',
+        self::IOP_ORDINARIA => 'Evaluación ordinaria (no afecta a IOP)',
+    ];
+
     protected $table = 'examenes';
 
     public const CREATED_AT = 'creado_en';
@@ -22,6 +37,8 @@ class Examen extends Model
         'tiempo_limite',
         'intentos_permitidos',
         'puntaje_maximo',
+        'mostrar_correctas',
+        'tipo_iop',
         'estado',
     ];
 
@@ -29,6 +46,7 @@ class Examen extends Model
     {
         return [
             'puntaje_maximo' => 'decimal:2',
+            'mostrar_correctas' => 'boolean',
         ];
     }
 

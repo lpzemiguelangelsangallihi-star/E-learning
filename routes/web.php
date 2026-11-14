@@ -1,27 +1,24 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BitacoraController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\StatisticsController;
-use App\Http\Controllers\Admin\ProfileController;
-use App\Http\Controllers\Professor\DashboardController as ProfessorDashboardController;
-use App\Http\Controllers\Professor\CourseController as ProfessorCourseController;
-use App\Http\Controllers\Professor\StatisticsController as ProfessorStatisticsController;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
-use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\CourseFileController;
+use App\Http\Controllers\Professor\CourseController as ProfessorCourseController;
+use App\Http\Controllers\Professor\DashboardController as ProfessorDashboardController;
+use App\Http\Controllers\Professor\StatisticsController as ProfessorStatisticsController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
+use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\EvaluationController;
 use App\Http\Controllers\Student\GradeController;
+use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\RecommendationController;
-use App\Http\Controllers\Student\ProfileController as StudentProfileController;
-
-
-
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,7 +29,6 @@ use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 Route::get('/', function () {
     return view('welcome');
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -54,22 +50,17 @@ Route::middleware([
 
         return match ($user->rol?->nombre) {
 
-            'administrador' =>
-                redirect()->route('admin.dashboard'),
+            'administrador' => redirect()->route('admin.dashboard'),
 
-            'profesor' =>
-                redirect()->route('professor.dashboard'),
+            'profesor' => redirect()->route('professor.dashboard'),
 
-            'estudiante' =>
-                redirect()->route('student.dashboard'),
+            'estudiante' => redirect()->route('student.dashboard'),
 
-            default =>
-                abort(403),
+            default => abort(403),
         };
 
     })
     ->name('dashboard');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -93,13 +84,12 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::get('/dashboard',[DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::get(
             '/bitacora',
             [BitacoraController::class, 'index']
         )->name('bitacora.index');
-
 
         /*
         |--------------------------------------------------------------------------
@@ -107,14 +97,13 @@ Route::middleware([
         |--------------------------------------------------------------------------
         */
 
-        Route::get('/usuarios',[UserController::class, 'index'])->name('users.index');
-        Route::get('/usuarios/crear',[UserController::class, 'create'])->name('users.create');
-        Route::post('/usuarios',[UserController::class, 'store'])->name('users.store');
-        Route::get('/usuarios/{user}/editar',[UserController::class, 'edit'])->name('users.edit');
-        Route::put('/usuarios/{user}',[UserController::class, 'update'])->name('users.update');
-        Route::patch('/usuarios/{user}/estado',[UserController::class, 'toggleStatus'])->name('users.toggle-status');
-        Route::delete('/usuarios/{user}',[UserController::class, 'destroy'])->name('users.destroy');
-
+        Route::get('/usuarios', [UserController::class, 'index'])->name('users.index');
+        Route::get('/usuarios/crear', [UserController::class, 'create'])->name('users.create');
+        Route::post('/usuarios', [UserController::class, 'store'])->name('users.store');
+        Route::get('/usuarios/{user}/editar', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/usuarios/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::patch('/usuarios/{user}/estado', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::delete('/usuarios/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
         /*
         |--------------------------------------------------------------------------
@@ -127,18 +116,15 @@ Route::middleware([
             [AdminCourseController::class, 'index']
         )->name('courses.index');
 
-
         Route::patch(
             '/cursos/{curso}/visibilidad',
             [AdminCourseController::class, 'toggleVisibility']
         )->name('courses.toggle-visibility');
 
-
         Route::delete(
             '/cursos/{curso}',
             [AdminCourseController::class, 'destroy']
         )->name('courses.destroy');
-
 
         /*
         |--------------------------------------------------------------------------
@@ -151,7 +137,6 @@ Route::middleware([
             [StatisticsController::class, 'index']
         )->name('statistics.index');
 
-
         /*
         |--------------------------------------------------------------------------
         | Perfil
@@ -163,12 +148,10 @@ Route::middleware([
             [ProfileController::class, 'edit']
         )->name('profile.edit');
 
-
         Route::put(
             '/perfil',
             [ProfileController::class, 'update']
         )->name('profile.update');
-
 
         /*
         |--------------------------------------------------------------------------
@@ -181,14 +164,12 @@ Route::middleware([
             [ProfileController::class, 'settings']
         )->name('settings.index');
 
-
-           Route::put(
-       '/configuracion/password',
-       [ProfileController::class, 'updatePassword']
-   )->name('settings.password');
+        Route::put(
+            '/configuracion/password',
+            [ProfileController::class, 'updatePassword']
+        )->name('settings.password');
 
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -205,21 +186,19 @@ Route::middleware([
     ->name('professor.')
     ->group(function () {
 
-        Route::get('/dashboard',[ProfessorDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/cursos',[ProfessorCourseController::class, 'index'])->name('courses.index');
-        Route::get('/cursos/crear',[ProfessorCourseController::class, 'create'])->name('courses.create');
-        Route::post('/cursos',[ProfessorCourseController::class, 'store'])->name('courses.store');
-        Route::get('/cursos/{curso}/editar',[ProfessorCourseController::class, 'edit'])->name('courses.edit');
-        Route::put('/cursos/{curso}',[ProfessorCourseController::class, 'update'])->name('courses.update');
-        Route::delete('/cursos/{curso}',[ProfessorCourseController::class, 'destroy'])->name('courses.destroy');
+        Route::get('/dashboard', [ProfessorDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/cursos', [ProfessorCourseController::class, 'index'])->name('courses.index');
+        Route::get('/cursos/crear', [ProfessorCourseController::class, 'create'])->name('courses.create');
+        Route::post('/cursos', [ProfessorCourseController::class, 'store'])->name('courses.store');
+        Route::get('/cursos/{curso}/editar', [ProfessorCourseController::class, 'edit'])->name('courses.edit');
+        Route::put('/cursos/{curso}', [ProfessorCourseController::class, 'update'])->name('courses.update');
+        Route::delete('/cursos/{curso}', [ProfessorCourseController::class, 'destroy'])->name('courses.destroy');
 
+        Route::patch('/cursos/{curso}/estado', [ProfessorCourseController::class, 'toggleStatus'])->name('courses.toggle-status');
+        Route::get('/cursos/{curso}/estudiantes', [ProfessorCourseController::class, 'students'])->name('courses.students');
+        Route::get('/estadisticas', [ProfessorStatisticsController::class, 'index'])->name('statistics.index');
 
-        Route::patch('/cursos/{curso}/estado',[ProfessorCourseController::class, 'toggleStatus'])->name('courses.toggle-status');
-        Route::get('/cursos/{curso}/estudiantes',[ProfessorCourseController::class, 'students'])->name('courses.students');
-        Route::get('/estadisticas',[ProfessorStatisticsController::class, 'index'])->name('statistics.index');
-
-
-        Route::get('/iop/refuerzos',fn () => view('professor.iop.refuerzos'))->name('iop.refuerzos');
+        Route::get('/iop/refuerzos', fn () => view('professor.iop.refuerzos'))->name('iop.refuerzos');
 
 Route::get('/iop/lecciones/{leccionId}/ejercicios',function (int $leccionId) {return view('professor.iop.catalogo', 
         ['leccionId'=>$leccionId,]);
@@ -227,7 +206,6 @@ Route::get('/iop/lecciones/{leccionId}/ejercicios',function (int $leccionId) {re
 
 
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -309,6 +287,28 @@ Route::middleware([
 
 require __DIR__.'/academico.php';
 
+/*
+|--------------------------------------------------------------------------
+| Archivos académicos privados
+|--------------------------------------------------------------------------
+|
+| Los materiales, videos y adjuntos de tareas se sirven solo a usuarios
+| con acceso al curso correspondiente.
+|
+*/
+Route::middleware('auth')
+    ->prefix('archivos')
+    ->name('files.')
+    ->group(function () {
+        Route::get('/materiales/{material}', [CourseFileController::class, 'material'])
+            ->name('material');
+
+        Route::get('/videos/{video}', [CourseFileController::class, 'video'])
+            ->name('video');
+
+        Route::get('/tareas/{tarea}', [CourseFileController::class, 'tarea'])
+            ->name('tarea');
+    });
 
 /*
 |--------------------------------------------------------------------------

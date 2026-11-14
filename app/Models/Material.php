@@ -27,14 +27,21 @@ class Material extends Model
         return $this->belongsTo(Leccion::class, 'leccion_id');
     }
 
-    /** URL para abrir/descargar el material (archivo subido o enlace). */
+    /**
+     * URL para abrir/descargar el material.
+     *
+     * Los archivos subidos se sirven por una ruta autorizada (el disco es
+     * privado); los enlaces externos solo se aceptan si son http(s).
+     */
     public function getEnlaceAttribute(): ?string
     {
         if ($this->archivo) {
-            return asset('storage/'.$this->archivo);
+            return $this->exists ? route('files.material', $this->id) : null;
         }
 
-        return $this->url;
+        return preg_match('#^https?://#i', (string) $this->url) === 1
+            ? $this->url
+            : null;
     }
 
     public function getIconoAttribute(): string

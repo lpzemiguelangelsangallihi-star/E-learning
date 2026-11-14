@@ -52,4 +52,12 @@ class Tarea extends Model
     {
         return $this->hasMany(Calificacion::class, 'tarea_id');
     }
+
+    /** URL autorizada del archivo de apoyo de la tarea. */
+    public function getArchivoUrlAttribute(): ?string
+    {
+        return $this->archivo && $this->exists
+            ? route('files.tarea', $this->id)
+            : null;
+    }
 }

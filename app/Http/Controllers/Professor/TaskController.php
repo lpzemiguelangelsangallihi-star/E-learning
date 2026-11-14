@@ -8,6 +8,7 @@ use App\Models\Entrega;
 use App\Models\Leccion;
 use App\Models\Tarea;
 use App\Services\BitacoraService;
+use App\Services\CourseFileService;
 use App\Services\Evaluacion\TaskService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,9 +19,10 @@ use Illuminate\Support\Facades\Storage;
 /** Tareas del profesor: CRUD, estados y calificación de entregas. */
 class TaskController extends Controller
 {
-    public function __construct(private TaskService $tareas)
-    {
-    }
+    public function __construct(
+        private TaskService $tareas,
+        private CourseFileService $files
+    ) {}
 
     public function index(Request $request)
     {
@@ -74,7 +76,7 @@ class TaskController extends Controller
         abort_unless((int) $leccion->modulo?->curso?->profesor_id === (int) Auth::id(), 403);
 
         $archivo = $request->hasFile('archivo')
-            ? $request->file('archivo')->store('tareas', 'public')
+            ? $request->file('archivo')->store('tareas', 'local')
             : null;
 
         $tarea = Tarea::create([
@@ -124,16 +126,14 @@ class TaskController extends Controller
         ];
 
         if ($request->boolean('quitar_archivo') && $tarea->archivo) {
-            Storage::disk('public')->delete($tarea->archivo);
+            $this->files->delete($tarea->archivo);
             $cambios['archivo'] = null;
         }
 
         if ($request->hasFile('archivo')) {
-            if ($tarea->archivo) {
-                Storage::disk('public')->delete($tarea->archivo);
-            }
+            $this->files->delete($tarea->archivo);
 
-            $cambios['archivo'] = $request->file('archivo')->store('tareas', 'public');
+            $cambios['archivo'] = $request->file('archivo')->store('tareas', 'local');
         }
 
         $tarea->update($cambios);
@@ -155,9 +155,7 @@ class TaskController extends Controller
             return back()->with('error', 'No se puede eliminar una tarea con entregas. Ciérrala para que no reciba más.');
         }
 
-        if ($tarea->archivo) {
-            Storage::disk('public')->delete($tarea->archivo);
-        }
+        $this->files->delete($tarea->archivo);
 
         $titulo = $tarea->titulo;
 
@@ -243,9 +241,12 @@ class TaskController extends Controller
         Gate::authorize('manage', $tarea);
 
         abort_unless((int) $entrega->tarea_id === (int) $tarea->id && $entrega->archivo, 404);
-        abort_unless(Storage::disk('local')->exists($entrega->archivo), 404);
 
-        return Storage::disk('local')->download($entrega->archivo);
+        $disk = $this->files->diskFor($entrega->archivo);
+
+        abort_unless($disk, 404);
+
+        return Storage::disk($disk)->download($entrega->archivo);
     }
 
     private function validar(Request $request, bool $creando): array

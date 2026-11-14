@@ -13,15 +13,14 @@ use Illuminate\Support\Facades\Gate;
 /** Flujo del estudiante: ver examen, iniciar, resolver y ver resultado. */
 class ExamController extends Controller
 {
-    public function __construct(private ExamAttemptService $intentos)
-    {
-    }
+    public function __construct(private ExamAttemptService $intentos) {}
 
     public function show(Examen $examen)
     {
         $examen->load('leccion.modulo.curso');
 
-        Gate::authorize('take', $examen);
+        // "view" también permite entrar a un examen cerrado si el estudiante ya tiene intentos.
+        Gate::authorize('view', $examen);
 
         $estudianteId = Auth::id();
 
@@ -43,9 +42,10 @@ class ExamController extends Controller
         }
 
         $usados = $historial->count();
-        $puedeIniciar = $abierto !== null || $usados < (int) $examen->intentos_permitidos;
+        $puedeIniciar = $examen->estado === 'publicado'
+            && ($abierto !== null || $usados < (int) $examen->intentos_permitidos);
 
-        return view('student.evaluations.exam.show', [
+        return view('student.exams.show', [
             'examen' => $examen,
             'historial' => $historial,
             'abierto' => $abierto,
@@ -88,7 +88,7 @@ class ExamController extends Controller
             return redirect()->route('student.evaluations.exam.result', $intento);
         }
 
-        return view('student.evaluations.exam.attempt', ['intento' => $intento, 'examen' => $intento->examen]);
+        return view('student.exams.attempt', ['intento' => $intento, 'examen' => $intento->examen]);
     }
 
     public function result(IntentoExamen $intento)
@@ -109,7 +109,7 @@ class ExamController extends Controller
 
         $intentosRestantes = max(0, (int) $examen->intentos_permitidos - $this->intentos->usados($examen, Auth::id()));
 
-        return view('student.evaluations.exam.result', [
+        return view('student.exams.result', [
             'intento' => $intento,
             'examen' => $examen,
             'mostrarCorrectas' => (bool) ($examen->mostrar_correctas ?? true),

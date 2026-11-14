@@ -7,8 +7,10 @@ use App\Models\IntentoExamen;
 use App\Models\Pregunta;
 use App\Models\RespuestaEstudiante;
 use App\Models\User;
+use App\Services\IOP\IntegracionEvaluacionIOPService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -122,19 +124,27 @@ class ExamAttemptService
      */
     public function guardarRespuesta(IntentoExamen $intento, Pregunta $pregunta, mixed $valor): void
     {
-        if ($intento->estado !== 'en_proceso') {
-            throw new ExamException('Este intento ya fue entregado.');
-        }
-
-        if ($this->expirado($intento)) {
-            throw new ExamException('El tiempo del examen terminó.');
-        }
-
         if ((int) $pregunta->examen_id !== (int) $intento->examen_id) {
             throw new ExamException('La pregunta no pertenece a este examen.');
         }
 
         DB::transaction(function () use ($intento, $pregunta, $valor) {
+            // Se bloquea el intento y se revalida su estado dentro de la transacción:
+            // evita que un guardado tardío se cuele mientras se entrega el examen.
+            $bloqueado = IntentoExamen::query()
+                ->with('examen')
+                ->whereKey($intento->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($bloqueado->estado !== 'en_proceso') {
+                throw new ExamException('Este intento ya fue entregado.');
+            }
+
+            if ($this->expirado($bloqueado)) {
+                throw new ExamException('El tiempo del examen terminó.');
+            }
+
             $base = ['intento_id' => $intento->id, 'pregunta_id' => $pregunta->id];
 
             $validas = $pregunta->opciones()->pluck('id')->map(fn ($id) => (int) $id)->all();
@@ -186,7 +196,9 @@ class ExamAttemptService
      */
     public function finalizar(IntentoExamen $intento): IntentoExamen
     {
-        return DB::transaction(function () use ($intento) {
+        $recienFinalizado = false;
+
+        $resultado = DB::transaction(function () use ($intento, &$recienFinalizado) {
             $bloqueado = IntentoExamen::query()
                 ->whereKey($intento->id)
                 ->lockForUpdate()
@@ -196,8 +208,45 @@ class ExamAttemptService
                 return $bloqueado;
             }
 
+            $recienFinalizado = true;
+
             return $this->calificador->grade($bloqueado);
         });
+
+        // Fuera de la transacción: un fallo de IOP nunca debe deshacer la entrega.
+        if ($recienFinalizado) {
+            $this->notificarIOP($resultado);
+        }
+
+        return $resultado;
+    }
+
+    /**
+     * Según el tipo de evaluación IOP del examen:
+     *  diagnostico → inicia el seguimiento; refuerzo → registra la transición;
+     *  ninguno / ordinaria → no hace nada.
+     */
+    private function notificarIOP(IntentoExamen $intento): void
+    {
+        $tipo = (string) $intento->examen()->value('tipo_iop');
+
+        if (! in_array($tipo, [Examen::IOP_DIAGNOSTICO, Examen::IOP_REFUERZO], true)) {
+            return;
+        }
+
+        try {
+            $iop = app(IntegracionEvaluacionIOPService::class);
+
+            $tipo === Examen::IOP_DIAGNOSTICO
+                ? $iop->procesarDiagnostico((int) $intento->id)
+                : $iop->procesarSeguimiento((int) $intento->id);
+        } catch (\Throwable $e) {
+            Log::warning('IOP no procesó el intento de examen.', [
+                'intento_id' => $intento->id,
+                'tipo_iop' => $tipo,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

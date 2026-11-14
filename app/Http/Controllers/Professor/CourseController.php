@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use App\Models\Materia;
 use App\Services\BitacoraService;
+use App\Services\CourseFileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class CourseController extends Controller
 {
+    public function __construct(private CourseFileService $files) {}
+
     public function index(Request $request)
     {
         $profesorId = Auth::id();
@@ -27,18 +30,16 @@ class CourseController extends Controller
         $materiaId = $request
             ->integer('materia');
 
-
         $cursos = Curso::query()
             ->with('materia')
 
             ->withCount([
-                'inscripciones as estudiantes_count' =>
-                    function ($query) {
-                        $query->where(
-                            'estado',
-                            'activo'
-                        );
-                    },
+                'inscripciones as estudiantes_count' => function ($query) {
+                    $query->where(
+                        'estado',
+                        'activo'
+                    );
+                },
             ])
 
             ->where(
@@ -71,11 +72,10 @@ class CourseController extends Controller
 
             ->when(
                 $materiaId,
-                fn ($query) =>
-                    $query->where(
-                        'materia_id',
-                        $materiaId
-                    )
+                fn ($query) => $query->where(
+                    'materia_id',
+                    $materiaId
+                )
             )
 
             ->when(
@@ -88,11 +88,10 @@ class CourseController extends Controller
                     ],
                     true
                 ),
-                fn ($query) =>
-                    $query->where(
-                        'estado',
-                        $estado
-                    )
+                fn ($query) => $query->where(
+                    'estado',
+                    $estado
+                )
             )
 
             ->orderByDesc('creado_en')
@@ -101,12 +100,10 @@ class CourseController extends Controller
 
             ->withQueryString();
 
-
         $materias = Materia::query()
             ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
-
 
         return view(
             'professor.courses.index',
@@ -120,7 +117,6 @@ class CourseController extends Controller
         );
     }
 
-
     public function create()
     {
         $materias = Materia::query()
@@ -128,13 +124,11 @@ class CourseController extends Controller
             ->orderBy('nombre')
             ->get();
 
-
         return view(
             'professor.courses.create',
             compact('materias')
         );
     }
-
 
     public function store(Request $request)
     {
@@ -159,31 +153,23 @@ class CourseController extends Controller
 
         ]);
 
-
         $curso = Curso::create([
-            'profesor_id' =>
-                Auth::id(),
+            'profesor_id' => Auth::id(),
 
-            'materia_id' =>
-                $validated['materia_id'],
+            'materia_id' => $validated['materia_id'],
 
-            'titulo' =>
-                trim($validated['titulo']),
+            'titulo' => trim($validated['titulo']),
 
-            'descripcion' =>
-                !empty($validated['descripcion'])
+            'descripcion' => ! empty($validated['descripcion'])
                     ? trim($validated['descripcion'])
                     : null,
 
-            'estado' =>
-                'borrador',
+            'estado' => 'borrador',
         ]);
-
 
         BitacoraService::registrar(
             "Creó el curso {$curso->titulo}."
         );
-
 
         return redirect()
             ->route(
@@ -195,17 +181,14 @@ class CourseController extends Controller
             );
     }
 
-
     public function edit(Curso $curso)
     {
         $this->authorizeCourse($curso);
-
 
         $materias = Materia::query()
             ->activasParaCursos()
             ->orderBy('nombre')
             ->get();
-
 
         return view(
             'professor.courses.edit',
@@ -216,13 +199,11 @@ class CourseController extends Controller
         );
     }
 
-
     public function update(
         Request $request,
         Curso $curso
     ) {
         $this->authorizeCourse($curso);
-
 
         $validated = $request->validate([
             'materia_id' => [
@@ -243,7 +224,6 @@ class CourseController extends Controller
                 'string',
             ],
 
-
             'estado' => [
                 'required',
                 Rule::in([
@@ -254,28 +234,21 @@ class CourseController extends Controller
             ],
         ]);
 
-
         $curso->update([
-            'materia_id' =>
-                $validated['materia_id'],
+            'materia_id' => $validated['materia_id'],
 
-            'titulo' =>
-                trim($validated['titulo']),
+            'titulo' => trim($validated['titulo']),
 
-            'descripcion' =>
-                !empty($validated['descripcion'])
+            'descripcion' => ! empty($validated['descripcion'])
                     ? trim($validated['descripcion'])
                     : null,
 
-            'estado' =>
-                $validated['estado'],
+            'estado' => $validated['estado'],
         ]);
-
 
         BitacoraService::registrar(
             "Actualizó el curso {$curso->titulo}."
         );
-
 
         return redirect()
             ->route(
@@ -287,11 +260,9 @@ class CourseController extends Controller
             );
     }
 
-
     public function destroy(Curso $curso)
     {
         $this->authorizeCourse($curso);
-
 
         if ($curso->inscripciones()->exists()) {
 
@@ -301,15 +272,14 @@ class CourseController extends Controller
             );
         }
 
-
         $tituloCurso = $curso->titulo;
-        $curso->delete();
 
+        $this->files->deleteForCourse($curso);
+        $curso->delete();
 
         BitacoraService::registrar(
             "Eliminó el curso {$tituloCurso}."
         );
-
 
         return redirect()
             ->route(
@@ -320,7 +290,6 @@ class CourseController extends Controller
                 'Curso eliminado correctamente.'
             );
     }
-
 
     /**
      * Publicar u ocultar un curso.
@@ -336,7 +305,6 @@ class CourseController extends Controller
             'estado' => $publicar ? 'publicado' : 'oculto',
         ]);
 
-
         BitacoraService::registrar(
             "Cambió el estado del curso {$curso->titulo} a {$curso->estado}."
         );
@@ -348,7 +316,6 @@ class CourseController extends Controller
                 : 'Curso ocultado correctamente.'
         );
     }
-
 
     /**
      * Estudiantes inscritos en un curso del profesor.
@@ -392,7 +359,6 @@ class CourseController extends Controller
             compact('curso', 'inscripciones', 'totales', 'search', 'estado')
         );
     }
-
 
     private function authorizeCourse(
         Curso $curso
