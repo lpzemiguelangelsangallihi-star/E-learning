@@ -28,10 +28,38 @@ class ExamenPolicy
         $leccion = $examen->leccion;
         $curso = $leccion?->modulo?->curso;
 
-        if (! $curso || $curso->estado !== 'publicado' || $leccion->estado !== 'publicado') {
+        if (
+            ! $curso
+            || $curso->estado !== 'publicado'
+            || $leccion->estado !== 'publicado'
+            || $leccion->modulo?->estado !== 'activo'
+        ) {
             return false;
         }
 
         return in_array((int) $curso->id, array_map('intval', Inscripcion::cursoIdsDe($user->id)), true);
+    }
+
+    /**
+     * Ver la ficha del examen: publicado (como "take") o cerrado cuando el
+     * estudiante ya tiene intentos y necesita volver a consultar sus resultados.
+     */
+    public function view(User $user, Examen $examen): bool
+    {
+        if ($this->take($user, $examen)) {
+            return true;
+        }
+
+        if ($user->rol?->nombre !== 'estudiante' || $examen->estado !== 'cerrado') {
+            return false;
+        }
+
+        $curso = $examen->leccion?->modulo?->curso;
+
+        if (! $curso || ! in_array((int) $curso->id, array_map('intval', Inscripcion::cursoIdsDe($user->id)), true)) {
+            return false;
+        }
+
+        return $examen->intentos()->where('estudiante_id', $user->id)->exists();
     }
 }

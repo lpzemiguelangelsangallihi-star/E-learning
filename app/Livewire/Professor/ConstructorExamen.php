@@ -34,6 +34,7 @@ class ConstructorExamen extends Component
     public $intentos_permitidos = 1;
     public $puntaje_maximo = 100;
     public bool $mostrar_correctas = true;
+    public string $tipo_iop = 'ninguno';
 
     // Formulario de pregunta
     public bool $formAbierto = false;
@@ -63,6 +64,7 @@ class ConstructorExamen extends Component
         $this->intentos_permitidos = $examen->intentos_permitidos;
         $this->puntaje_maximo = rtrim(rtrim((string) $examen->puntaje_maximo, '0'), '.');
         $this->mostrar_correctas = (bool) ($examen->mostrar_correctas ?? true);
+        $this->tipo_iop = (string) ($examen->tipo_iop ?? Examen::IOP_NINGUNO);
     }
 
     /* ---------------------------------------------------------------
@@ -136,12 +138,22 @@ class ConstructorExamen extends Component
             'tiempo_limite' => 'nullable|integer|min:1|max:600',
             'intentos_permitidos' => 'required|integer|min:1|max:20',
             'puntaje_maximo' => 'required|numeric|min:1|max:999',
+            'tipo_iop' => 'required|in:'.implode(',', array_keys(Examen::TIPOS_IOP)),
         ], [], [
             'titulo' => 'título',
             'tiempo_limite' => 'tiempo límite',
             'intentos_permitidos' => 'intentos permitidos',
             'puntaje_maximo' => 'puntaje máximo',
+            'tipo_iop' => 'tipo de evaluación IOP',
         ]);
+
+        // El tipo IOP no cambia cuando ya hay intentos: alteraría el historial de IOP.
+        if ($this->tipo_iop !== (string) $examen->tipo_iop && $this->tieneIntentos($examen)) {
+            $this->tipo_iop = (string) $examen->tipo_iop;
+            $this->error = 'Este examen ya tiene intentos; su tipo de evaluación IOP no se puede cambiar.';
+
+            return;
+        }
 
         $examen->forceFill([
             'titulo' => trim($this->titulo),
@@ -150,6 +162,7 @@ class ConstructorExamen extends Component
             'intentos_permitidos' => (int) $this->intentos_permitidos,
             'puntaje_maximo' => (float) $this->puntaje_maximo,
             'mostrar_correctas' => $this->mostrar_correctas,
+            'tipo_iop' => $this->tipo_iop,
         ])->save();
 
         BitacoraService::registrar("Actualizó los datos del examen «{$examen->titulo}»");
@@ -591,6 +604,7 @@ class ConstructorExamen extends Component
             'otrosExamenes' => $otros,
             'bancoPreguntas' => $bancoPreguntas,
             'tipos' => self::TIPOS,
+            'tiposIop' => Examen::TIPOS_IOP,
         ]);
     }
 }

@@ -59,7 +59,10 @@
                     <p class="text-xs text-slate-500">{{ $entrega->fecha_entrega->format('d/m/Y H:i') }}</p>
 
                     @if ($entrega->archivo)
-                        <p class="mt-2 text-sm text-slate-700"><i class="fa-solid fa-paperclip mr-1" aria-hidden="true"></i>{{ basename($entrega->archivo) }}</p>
+                        <a href="{{ route('student.evaluations.task.download', $tarea) }}"
+                            class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#2563EB] hover:underline">
+                            <i class="fa-solid fa-paperclip" aria-hidden="true"></i> {{ basename($entrega->archivo) }}
+                        </a>
                     @endif
 
                     @if ($entrega->respuesta)

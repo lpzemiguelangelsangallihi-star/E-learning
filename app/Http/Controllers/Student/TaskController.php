@@ -10,6 +10,7 @@ use App\Services\Evaluacion\TaskService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 /** Tareas del estudiante: ver instrucciones y entregar. */
 class TaskController extends Controller
@@ -29,7 +30,7 @@ class TaskController extends Controller
             ->where('estudiante_id', Auth::id())
             ->first();
 
-        return view('student.evaluations.task.show', [
+        return view('student.tasks.show', [
             'tarea' => $tarea,
             'entrega' => $entrega,
             'puedeEntregar' => Gate::allows('submit', $tarea) && ($entrega === null || $entrega->estado !== 'calificada'),
@@ -72,5 +73,23 @@ class TaskController extends Controller
         return redirect()
             ->route('student.evaluations.task.show', $tarea)
             ->with('success', 'Tu entrega fue registrada.');
+    }
+
+    /** Descarga del archivo que el propio estudiante entregó (almacenamiento privado). */
+    public function download(Tarea $tarea)
+    {
+        $tarea->load('leccion.modulo.curso');
+
+        Gate::authorize('view', $tarea);
+
+        $entrega = Entrega::query()
+            ->where('tarea_id', $tarea->id)
+            ->where('estudiante_id', Auth::id())
+            ->first();
+
+        abort_unless($entrega && $entrega->archivo, 404);
+        abort_unless(Storage::disk('local')->exists($entrega->archivo), 404);
+
+        return Storage::disk('local')->download($entrega->archivo);
     }
 }

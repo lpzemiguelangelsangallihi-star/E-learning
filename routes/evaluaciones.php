@@ -68,4 +68,5 @@ Route::middleware([
 
         Route::get('/tareas/{tarea}', [StudentTaskController::class, 'show'])->name('evaluations.task.show');
         Route::post('/tareas/{tarea}/entregar', [StudentTaskController::class, 'submit'])->name('evaluations.task.submit');
+        Route::get('/tareas/{tarea}/mi-entrega/descargar', [StudentTaskController::class, 'download'])->name('evaluations.task.download');
     });
