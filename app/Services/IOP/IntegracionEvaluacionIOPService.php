@@ -58,6 +58,15 @@ class IntegracionEvaluacionIOPService
         return DB::transaction(function () use ($intentoId) {
             [$intento, $nota] = $this->obtenerIntento($intentoId);
 
+            if (
+                $intento->examen->tipo_iop
+                    !== \App\Models\Examen::IOP_DIAGNOSTICO
+            ) {
+                throw ValidationException::withMessages([
+                    'intento' =>
+                        'El examen no está configurado como diagnóstico IOP.',
+                ]);
+            }
             // Serializa el procesamiento para el estudiante.
             User::whereKey($intento->estudiante_id)
                 ->lockForUpdate()
@@ -114,17 +123,34 @@ class IntegracionEvaluacionIOPService
             return $seguimiento->refresh();
         });
     }
-
     /**
-     * Evaluación posterior a un ciclo de refuerzo.
+     * Procesa una evaluación real de refuerzo.
+     *
+     * Verifica el ciclo actual, registra Markov,
+     * comprueba S4 y genera el siguiente refuerzo.
      */
     public function procesarSeguimiento(
         int $intentoId
     ): IopTransicion {
         return DB::transaction(function () use ($intentoId) {
-            [$intento, $nota] = $this->obtenerIntento($intentoId);
 
-            User::whereKey($intento->estudiante_id)
+            [$intento, $nota] = $this->obtenerIntento(
+                $intentoId
+            );
+
+            if (
+                $intento->examen->tipo_iop
+                    !== \App\Models\Examen::IOP_REFUERZO
+            ) {
+                throw ValidationException::withMessages([
+                    'intento' =>
+                        'El examen no es una evaluación IOP de refuerzo.',
+                ]);
+            }
+
+            // Serializar las operaciones del estudiante.
+            User::query()
+                ->whereKey($intento->estudiante_id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
@@ -136,17 +162,10 @@ class IntegracionEvaluacionIOPService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($seguimiento->intento_diagnostico_id === null) {
-                throw ValidationException::withMessages([
-                    'seguimiento' =>
-                        'Este seguimiento fue creado manualmente. '
-                        .'No se mezclarán datos simulados con datos reales.',
-                ]);
-            }
-
             $referencia = 'intento_examen:' . $intento->id;
 
-            // Idempotencia: no repetir una transición registrada.
+            // Repetir una evaluación procesada
+            // nunca genera otro ciclo.
             $existente = IopTransicion::query()
                 ->where('referencia_externa', $referencia)
                 ->first();
@@ -154,11 +173,11 @@ class IntegracionEvaluacionIOPService
             if ($existente) {
                 if (
                     (int) $existente->seguimiento_id
-                    !== (int) $seguimiento->id
+                        !== (int) $seguimiento->id
                 ) {
                     throw ValidationException::withMessages([
                         'intento' =>
-                            'El intento ya pertenece a otro seguimiento.',
+                            'El intento pertenece a otro seguimiento.',
                     ]);
                 }
 
@@ -166,16 +185,34 @@ class IntegracionEvaluacionIOPService
             }
 
             if (
-                (int) $seguimiento->intento_diagnostico_id
-                === (int) $intento->id
+                !$seguimiento->activo ||
+                $seguimiento->estado_actual === 'S4'
             ) {
                 throw ValidationException::withMessages([
-                    'intento' =>
-                        'El diagnóstico no puede generar una transición.',
+                    'seguimiento' =>
+                        'El seguimiento ya está cerrado.',
                 ]);
             }
 
-            // No mezclar una secuencia manual con evaluaciones.
+            if ($seguimiento->intento_diagnostico_id === null) {
+                throw ValidationException::withMessages([
+                    'seguimiento' =>
+                        'No existe un diagnóstico real vinculado.',
+                ]);
+            }
+
+            if (
+                (int) $seguimiento->intento_diagnostico_id
+                    === (int) $intento->id
+            ) {
+                throw ValidationException::withMessages([
+                    'intento' =>
+                        'El diagnóstico no puede utilizarse '
+                        .'como evaluación de seguimiento.',
+                ]);
+            }
+
+            // Impedir mezclar simulaciones con datos reales.
             if ($seguimiento->transiciones()
                 ->where('origen', 'simulacion')
                 ->exists()
@@ -198,29 +235,78 @@ class IntegracionEvaluacionIOPService
             ) {
                 throw ValidationException::withMessages([
                     'intento' =>
-                        'El seguimiento debe ser posterior al diagnóstico.',
+                        'La evaluación debe ser posterior al diagnóstico.',
                 ]);
             }
 
-            // Impide ingresar exámenes antiguos fuera de orden.
+            // Consultar el ciclo que el estudiante
+            // debe completar antes de esta evaluación.
+            $cicloActual = $seguimiento->ciclosRefuerzo()
+                ->where('ciclo', $seguimiento->ciclo_actual)
+                ->with('recomendacion.asignacionRefuerzo')
+                ->first();
+
+            if (!$cicloActual) {
+                throw ValidationException::withMessages([
+                    'ciclo' =>
+                        'No existe un refuerzo registrado '
+                        .'para el ciclo actual.',
+                ]);
+            }
+
+            $recomendacion = $cicloActual->recomendacion;
+            $asignacion = $recomendacion
+                ?->asignacionRefuerzo;
+
+            if (
+                !$recomendacion ||
+                (int) $recomendacion->estudiante_id
+                    !== (int) $seguimiento->estudiante_id ||
+                (int) $recomendacion->leccion_id
+                    !== (int) $seguimiento->leccion_id ||
+                !$asignacion ||
+                $asignacion->estado !== 'completado' ||
+                !$asignacion->completado_en ||
+                !$asignacion->revisado_por
+            ) {
+                throw ValidationException::withMessages([
+                    'refuerzo' =>
+                        'Debes completar y obtener la aprobación '
+                        .'del refuerzo correspondiente al ciclo actual.',
+                ]);
+            }
+
+            // La evaluación debe ocurrir después
+            // de aprobar el ejercicio.
+            if (
+                !$intento->fecha_fin->greaterThan(
+                    $asignacion->completado_en
+                )
+            ) {
+                throw ValidationException::withMessages([
+                    'intento' =>
+                        'La evaluación se realizó antes '
+                        .'de aprobar el refuerzo actual.',
+                ]);
+            }
+
+            // Mantener el orden de las evaluaciones.
             $ultimaTransicion = $seguimiento->transiciones()
                 ->orderByDesc('ciclo')
                 ->first();
 
             if ($ultimaTransicion) {
-                $ultimaReferencia =
+
+                $ultimaReferencia = (string)
                     $ultimaTransicion->referencia_externa;
 
-                if (
-                    !$ultimaReferencia ||
-                    !str_starts_with(
-                        $ultimaReferencia,
-                        'intento_examen:'
-                    )
-                ) {
+                if (!preg_match(
+                    '/^intento_examen:[1-9][0-9]*$/',
+                    $ultimaReferencia
+                )) {
                     throw ValidationException::withMessages([
                         'historial' =>
-                            'El historial no tiene referencias verificables.',
+                            'El historial contiene una referencia inválida.',
                     ]);
                 }
 
@@ -241,66 +327,47 @@ class IntegracionEvaluacionIOPService
                 ) {
                     throw ValidationException::withMessages([
                         'intento' =>
-                            'Las evaluaciones deben procesarse en orden.',
+                            'Las evaluaciones deben procesarse '
+                            .'en orden cronológico.',
+                    ]);
+                }
+
+                if (
+                    !$asignacion->completado_en->greaterThan(
+                        $ultimoIntento->fecha_fin
+                    )
+                ) {
+                    throw ValidationException::withMessages([
+                        'refuerzo' =>
+                            'El refuerzo actual debe aprobarse '
+                            .'después de la evaluación anterior.',
                     ]);
                 }
             }
 
-            
-             //VERIFICACIÓN DEL REFUERZO ACADÉMICo
+            // 1. Registrar la transición académica real.
+            $transicion = $this->seguimientos
+                ->registrarEvaluacion(
+                    (int) $seguimiento->id,
+                    (float) $nota,
+                    'evaluacion',
+                    $referencia
+                );
 
-            $recomendacion = $seguimiento
-                ->recomendacionInicial()
-                ->with('asignacionRefuerzo')
-                ->first();
+            // 2. Comprobar la consolidación del aprendizaje.
+            $consolidado = $this->consolidacion
+                ->consolidarSiCorresponde(
+                    (int) $seguimiento->id
+                );
 
-            $asignacion = $recomendacion
-                ?->asignacionRefuerzo;
-
-            if (
-                !$asignacion ||
-                $asignacion->estado !== 'completado' ||
-                !$asignacion->completado_en ||
-                !$asignacion->revisado_por
-            ) {
-                throw ValidationException::withMessages([
-                    'refuerzo' =>
-                        'Debes completar y obtener la aprobación '
-                        .'del ejercicio de refuerzo antes de '
-                        .'realizar una evaluación de seguimiento.',
-                ]);
+            // 3. Si no alcanzó S4, preparar
+            //    automáticamente la siguiente actividad.
+            if (!$consolidado) {
+                $this->ciclosRefuerzo->generarSiguiente(
+                    (int) $transicion->id
+                );
             }
 
-            // Impide utilizar una evaluación realizada
-            // antes de que el profesor aprobara el refuerzo.
-            if (
-                !$intento->fecha_fin->greaterThan(
-                    $asignacion->completado_en
-                )
-            ) {
-                throw ValidationException::withMessages([
-                    'intento' =>
-                        'La evaluación debe haberse realizado '
-                        .'después de la aprobación del refuerzo.',
-                ]);
-            }
-
-
-            
-            $transicion = $this->seguimientos->registrarEvaluacion(
-                (int) $seguimiento->id,
-                (float) $nota,
-                'evaluacion',
-                $referencia
-            );
-
-            // Comprobar si la nueva evaluación permite
-            // consolidar el aprendizaje en S4.
-            $this->consolidacion->consolidarSiCorresponde(
-                (int) $seguimiento->id
-            );
-
-            // Devolver el estado definitivo de la transición.
             return $transicion->refresh();
         });
     }

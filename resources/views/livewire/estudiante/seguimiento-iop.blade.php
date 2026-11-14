@@ -405,6 +405,375 @@
         </div>
 
 
+        {{-- HISTORIAL COMPLETO DE REFUERZOS IOP --}}
+            
+        <div class="rounded-lg border bg-white p-5">
+        
+            <h2 class="text-lg font-semibold text-gray-900">
+                Historial de refuerzos adaptativos
+            </h2>
+        
+            <p class="mt-1 text-sm text-gray-500">
+                Consulta las recomendaciones Maximin,
+                los ejercicios y los resultados
+                de cada ciclo de aprendizaje.
+            </p>
+        
+            <div class="mt-5 space-y-4">
+            
+                @forelse ($historialRefuerzos as $ciclo)
+            
+                    @php
+                        $rec = $ciclo->recomendacion;
+                        $actividad = $rec?->asignacionRefuerzo;
+                        $ejercicioHistorico = $actividad?->ejercicio;
+            
+                        // La evaluación del ciclo siguiente
+                        // mide el refuerzo del ciclo actual.
+                        $evaluacion = $evaluacionesPorCiclo->get(
+                            (int) $ciclo->ciclo
+                        );
+            
+                        $esActual = (
+                            $seguimiento->activo &&
+                            (int) $seguimiento->ciclo_actual
+                                === (int) $ciclo->ciclo
+                        );
+            
+                        $estadoActividad = $actividad?->estado
+                            ?? 'sin_asignacion';
+                    @endphp
+        
+                    <div wire:key="iop-historial-{{ $ciclo->id }}"
+                         class="rounded-lg border border-gray-200 p-4">
+                    
+                        <div class="flex flex-wrap items-center
+                                    justify-between gap-3">
+                    
+                            <div>
+                                <h3 class="font-semibold text-gray-900">
+                                    Ciclo {{ $ciclo->ciclo }}
+                                
+                                    @if ((int) $ciclo->ciclo === 0)
+                                        — Diagnóstico
+                                    @else
+                                        — Refuerzo adaptativo
+                                    @endif
+                                </h3>
+                            
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Registrado:
+                                    {{ $ciclo->created_at?->format('d/m/Y H:i')
+                                        ?? 'Sin fecha' }}
+                                </p>
+                            </div>
+                        
+                            @if ($esActual)
+                                <span class="rounded-full bg-blue-100
+                                             px-3 py-1 text-xs font-semibold
+                                             text-blue-800">
+                                    Ciclo actual
+                                </span>
+                            @endif
+                        </div>
+                    
+                        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                        
+                            <div class="rounded-md bg-gray-50 p-3">
+                                <p class="text-xs text-gray-500">
+                                    Recomendación Maximin
+                                </p>
+                            
+                                <p class="mt-1 font-semibold text-gray-900">
+                                    {{ ucfirst(
+                                        $rec?->alternativa_recomendada
+                                            ?? 'No disponible'
+                                    ) }}
+                                </p>
+                            
+                                <p class="mt-1 text-xs text-gray-600">
+                                    Nota de referencia:
+                                    {{ $rec?->calificacion_inicial ?? '-' }}
+                                </p>
+                            
+                                <p class="text-xs text-gray-600">
+                                    Valor Maximin:
+                                    {{ $rec?->valor_maximin ?? '-' }}
+                                </p>
+                            </div>
+                        
+                            <div class="rounded-md bg-gray-50 p-3">
+                                <p class="text-xs text-gray-500">
+                                    Ejercicio asignado
+                                </p>
+                            
+                                <p class="mt-1 font-semibold text-gray-900">
+                                    {{ $ejercicioHistorico?->titulo
+                                        ?? 'Sin ejercicio' }}
+                                </p>
+                            
+                                <p class="mt-1 text-xs text-gray-600">
+                                    Tipo:
+                                    {{ ucfirst(
+                                        $ejercicioHistorico?->tipo ?? '-'
+                                    ) }}
+                                </p>
+                            
+                                <p class="text-xs text-gray-600">
+                                    Estado:
+                                    {{ ucfirst(
+                                        str_replace('_', ' ', $estadoActividad)
+                                    ) }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- JUSTIFICACIÓN MATEMÁTICA MAXIMIN --}}
+
+                        @if ($rec && is_array($rec->matriz_utilizada))
+
+                            <details class="mt-4 rounded-lg border
+                                            border-gray-200 bg-white p-4">
+
+                                <summary class="cursor-pointer
+                                                font-semibold text-gray-900">
+                                    Ver decisión matemática Maximin
+                                </summary>
+                            
+                                <p class="mt-3 text-sm text-gray-600">
+                                    Esta es la matriz de utilidades
+                                    utilizada cuando se generó
+                                    la recomendación de este ciclo.
+                                </p>
+                            
+                                <div class="mt-4 overflow-x-auto">
+                                
+                                    <table class="w-full text-left text-sm">
+                                    
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="p-3">
+                                                    Alternativa
+                                                </th>
+                                            
+                                                <th class="p-3">
+                                                    E1
+                                                </th>
+                                            
+                                                <th class="p-3">
+                                                    E2
+                                                </th>
+                                            
+                                                <th class="p-3">
+                                                    E3
+                                                </th>
+                                            
+                                                <th class="p-3">
+                                                    Mínimo
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                    
+                                        <tbody>
+                                        
+                                            @foreach (
+                                                ['teorico', 'practico', 'visual']
+                                                as $alternativa
+                                            )
+
+                                                @php
+                                                    $valores = $rec
+                                                        ->matriz_utilizada[$alternativa]
+                                                        ?? [];
+                                        
+                                                    $minimo = $rec
+                                                        ->minimos[$alternativa]
+                                                        ?? null;
+                                        
+                                                    $esElegida =
+                                                        $rec->alternativa_recomendada
+                                                        === $alternativa;
+                                                @endphp
+
+                                                <tr class="border-b
+                                                           {{ $esElegida
+                                                               ? 'bg-blue-50'
+                                                               : '' }}">
+
+                                                    <td class="p-3 font-medium">
+                                                        {{ ucfirst($alternativa) }}
+                                                    </td>
+                                                
+                                                    @for ($i = 0; $i < 3; $i++)
+                                                
+                                                        <td class="p-3">
+                                                            {{ $valores[$i] ?? '-' }}
+                                                        </td>
+                                                    
+                                                    @endfor
+                                                    
+                                                    <td class="p-3 font-semibold">
+                                                        {{ $minimo ?? '-' }}
+                                                    </td>
+                                                
+                                                </tr>
+                                            
+                                            @endforeach
+                                            
+                                        </tbody>
+                                    
+                                    </table>
+                                
+                                </div>
+                            
+                                <div class="mt-4 rounded-md
+                                            bg-blue-50 p-4">
+                            
+                                    <p class="text-sm font-semibold
+                                              text-blue-900">
+                                        Decisión del algoritmo
+                                    </p>
+                                
+                                    <p class="mt-2 text-sm text-blue-800">
+                                        Alternativa seleccionada:
+                                        <strong>
+                                            {{ ucfirst(
+                                                $rec->alternativa_recomendada
+                                            ) }}
+                                        </strong>
+                                    </p>
+                                
+                                    <p class="mt-1 text-sm text-blue-800">
+                                        Valor Maximin:
+                                        <strong>
+                                            {{ $rec->valor_maximin }}
+                                        </strong>
+                                    </p>
+                                
+                                    <p class="mt-3 text-xs text-blue-700">
+                                        Se seleccionó la alternativa
+                                        cuyo valor mínimo es el mayor
+                                        entre las opciones disponibles.
+                                    </p>
+                                
+                                </div>
+                            
+                            </details>
+                        
+                        @endif
+
+                    
+                        @if ($actividad)
+                    
+                            <div class="mt-4 text-sm text-gray-700">
+                            
+                                @if ($actividad->entregado_en)
+                                    <p>
+                                        <span class="font-medium">
+                                            Entregado:
+                                        </span>
+                                        {{ $actividad->entregado_en
+                                            ->format('d/m/Y H:i') }}
+                                    </p>
+                                @endif
+                                
+                                @if ($actividad->completado_en)
+                                    <p class="mt-1">
+                                        <span class="font-medium">
+                                            Aprobado:
+                                        </span>
+                                        {{ $actividad->completado_en
+                                            ->format('d/m/Y H:i') }}
+                                    </p>
+                                @endif
+                                
+                                @if ($actividad->retroalimentacion)
+                                    <div class="mt-3 rounded-md
+                                                bg-amber-50 p-3">
+                                        <p class="font-semibold text-amber-900">
+                                            Retroalimentación docente
+                                        </p>
+                                    
+                                        <p class="mt-1 whitespace-pre-line
+                                                  text-amber-800">
+                                            {{ $actividad->retroalimentacion }}
+                                        </p>
+                                    </div>
+                                @endif
+                                
+                                @if ($actividad->respuesta_estudiante)
+                                    <details class="mt-3 rounded-md
+                                                    border p-3">
+                                        <summary class="cursor-pointer
+                                                        font-medium">
+                                            Ver mi respuesta
+                                        </summary>
+                                    
+                                        <p class="mt-3 whitespace-pre-line
+                                                  break-words text-gray-700">
+                                            {{ $actividad->respuesta_estudiante }}
+                                        </p>
+                                    </details>
+                                @endif
+                                
+                            </div>
+                        
+                        @endif
+                        
+                        <div class="mt-4 border-t pt-3">
+                        
+                            @if ($evaluacion)
+                                <p class="text-sm font-medium text-gray-900">
+                                    Evaluación posterior al refuerzo
+                                </p>
+                            
+                                <p class="mt-1 text-sm text-gray-700">
+                                    Calificación:
+                                    <span class="font-semibold">
+                                        {{ $evaluacion->calificacion_nueva }}
+                                    </span>
+                                </p>
+                            
+                                <p class="mt-1 text-sm text-gray-700">
+                                    Evolución:
+                                    {{ $evaluacion->estado_anterior }}
+                                    →
+                                    {{ $evaluacion->estado_siguiente }}
+                                </p>
+                            
+                            @elseif ($esActual)
+                                <p class="text-sm text-blue-700">
+                                    Ciclo vigente. Todavía no existe
+                                    una evaluación posterior registrada.
+                                </p>
+                            
+                            @else
+                                <p class="text-sm text-gray-500">
+                                    No se encontró una evaluación
+                                    posterior asociada a este ciclo.
+                                </p>
+                            @endif
+                            
+                        </div>
+                    
+                    </div>
+                
+                @empty
+                
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <p class="text-sm text-gray-600">
+                            Todavía no existe un historial de
+                            ciclos de refuerzo para esta lección.
+                        </p>
+                    </div>
+                
+                @endforelse
+                
+            </div>
+        </div>
+
+
+
         {{-- HISTORIAL DE TRANSICIONES --}}
 
         <div class="rounded-lg border bg-white p-5">

@@ -10,9 +10,12 @@ use Illuminate\Validation\ValidationException;
 
 class RecomendacionService
 {
+    
     public function __construct(
-        private MaximinService $maximin
+        private MaximinService $maximin,
+        private MatrizAdaptativaService $adaptador
     ) {}
+
 
     public function generar(
         int $estudianteId,
@@ -46,9 +49,16 @@ class RecomendacionService
                     'modelo' => 'No existe una matriz Maximin activa.',
                 ]);
             }
+            
+            // Construir la matriz adaptada a la nota obtenida.
+            $matrizAdaptada = $this->adaptador->adaptar(
+                $modelo->matriz_utilidades,
+                $calificacion
+            );
 
+            // Aplicar Maximin a las utilidades adaptadas.
             $resultado = $this->maximin->recomendar(
-                $modelo->matriz_utilidades
+                $matrizAdaptada
             );
 
             return IopRecomendacion::create([
@@ -61,8 +71,7 @@ class RecomendacionService
                 'valor_maximin' =>
                     $resultado['valor_maximin'],
                 'minimos' => $resultado['minimos'],
-                'matriz_utilizada' =>
-                    $modelo->matriz_utilidades,
+                'matriz_utilizada' => $matrizAdaptada,
             ]);
         });
     }

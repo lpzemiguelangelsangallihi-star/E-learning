@@ -76,9 +76,6 @@ class SeguimientoIOP extends Component
             ->where('estudiante_id', $estudiante->id)
             ->where('leccion_id', $this->leccionId)
             ->firstOrFail();
-    
-        // Obtener la recomendación inicial
-        // y la asignación correspondiente.
         
         // Buscar el ciclo de refuerzo más reciente.
         // Solo se consideran ciclos del seguimiento
@@ -114,9 +111,6 @@ class SeguimientoIOP extends Component
             403
         );
 
-        $asignacion = $recomendacion->asignacionRefuerzo;
-
-    
         $asignacion = $recomendacion->asignacionRefuerzo;
     
         if (!$asignacion) {
@@ -156,21 +150,23 @@ class SeguimientoIOP extends Component
             ->with([
                 'transiciones' => function ($query) {
                     $query->orderBy('ciclo');
-                }
+                },
+                'ciclosRefuerzo' => function ($query) {
+                    $query->with([
+                        'recomendacion.asignacionRefuerzo.ejercicio',
+                    ]);
+                },
             ])
             ->first();
 
         // Recomendación correspondiente al seguimiento.
         
         // Obtener el ciclo de refuerzo más reciente.
+        
         $cicloRefuerzo = $seguimiento
-            ? $seguimiento->ciclosRefuerzo()
-                ->with([
-                    'recomendacion.asignacionRefuerzo.ejercicio'
-                ])
-                ->orderByDesc('ciclo')
-                ->first()
-            : null;
+        ? $seguimiento->ciclosRefuerzo->last()
+        : null;
+
 
         // Mostrar la recomendación del ciclo vigente.
         $recomendacion = $cicloRefuerzo
@@ -228,6 +224,20 @@ class SeguimientoIOP extends Component
             }
         }
 
+        // Datos históricos, únicamente del seguimiento
+        // perteneciente al estudiante autenticado.
+        $historialRefuerzos = $seguimiento
+            ? $seguimiento->ciclosRefuerzo
+            : collect();
+        
+        // Cada evaluación de ciclo N+1 corresponde
+        // al ejercicio aprobado del ciclo N.
+        $evaluacionesPorCiclo = $seguimiento
+            ? $seguimiento->transiciones->keyBy(
+                fn ($transicion) => (int) $transicion->ciclo - 1
+            )
+            : collect();        
+
         return view(
             'livewire.estudiante.seguimiento-iop',
             [
@@ -238,6 +248,9 @@ class SeguimientoIOP extends Component
                 'matrizReal' => $matrizReal,
                 'proyeccion' => $proyeccion,
                 'cicloRefuerzo' => $cicloRefuerzo,
+                'historialRefuerzos' => $historialRefuerzos,
+                'evaluacionesPorCiclo' => $evaluacionesPorCiclo,
+
             ]
         );
     }

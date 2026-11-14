@@ -12,6 +12,15 @@
         </p>
     </div>
 
+    <div class="flex flex-wrap gap-3">
+        <a href="{{ route('professor.iop.seguimientos') }}"
+           class="inline-flex rounded-md bg-blue-600
+                  px-4 py-2 text-sm font-semibold text-white
+                  hover:bg-blue-700">
+            Supervisar progreso IOP
+        </a>
+    </div>
+
     {{-- MENSAJES DE CONFIRMACIÓN --}}
 
     @if (session()->has('mensaje_revision'))

@@ -199,11 +199,10 @@ Route::middleware([
         Route::get('/estadisticas', [ProfessorStatisticsController::class, 'index'])->name('statistics.index');
 
         Route::get('/iop/refuerzos', fn () => view('professor.iop.refuerzos'))->name('iop.refuerzos');
-
-Route::get('/iop/lecciones/{leccionId}/ejercicios',function (int $leccionId) {return view('professor.iop.catalogo', 
-        ['leccionId'=>$leccionId,]);
-    })->whereNumber('leccionId')->name('iop.catalogo');
-
+        Route::get('/iop/seguimientos',fn () => view('professor.iop.seguimientos'))->name('iop.seguimientos');
+        
+        Route::get('/iop/lecciones/{leccionId}/ejercicios',function (int $leccionId) {return view('professor.iop.catalogo', 
+        ['leccionId'=>$leccionId,]);})->whereNumber('leccionId')->name('iop.catalogo');
 
     });
 
