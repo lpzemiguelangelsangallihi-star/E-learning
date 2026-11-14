@@ -48,8 +48,31 @@ class AsignacionRefuerzoService
                 $recomendacion->alternativa_recomendada
             );
 
-            $ejercicio = $disponibles->first();
-
+            // Historial de ejercicios recibidos por el estudiante
+            // en esta lección, excluyendo la recomendación actual.
+            $ejerciciosPrevios = IopAsignacionRefuerzo::query()
+                ->where('recomendacion_id', '!=', $recomendacion->id)
+                ->whereHas(
+                    'recomendacion',
+                    fn ($query) => $query
+                        ->where('estudiante_id', $recomendacion->estudiante_id)
+                        ->where('leccion_id', $recomendacion->leccion_id)
+                )
+                ->pluck('ejercicio_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+            
+            // Cantidad de veces que recibió cada ejercicio.
+            $frecuencias = array_count_values($ejerciciosPrevios);
+            
+            // Preferimos el ejercicio menos utilizado.
+            // En caso de empate conservamos el orden del catálogo.
+            $ejercicio = $disponibles
+                ->sortBy(
+                    fn ($item) => $frecuencias[(int) $item->id] ?? 0
+                )
+                ->first();
+            
             if (!$ejercicio) {
                 throw ValidationException::withMessages([
                     'ejercicio' =>

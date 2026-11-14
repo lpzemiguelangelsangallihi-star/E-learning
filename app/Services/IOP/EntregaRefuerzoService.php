@@ -7,6 +7,8 @@ use App\Models\IopAsignacionRefuerzo;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Models\IopSeguimiento;
+use App\Models\IopCicloRefuerzo;
 
 class EntregaRefuerzoService
 {
@@ -61,7 +63,45 @@ class EntregaRefuerzoService
             if (!$inscrito || $curso->estado !== 'publicado') {
                 abort(403, 'No tienes acceso activo a este curso.');
             }
+            // Verificar que el ejercicio pertenezca
+            // al ciclo vigente de un seguimiento real.
+            $seguimiento = IopSeguimiento::query()
+                ->where('estudiante_id', $estudiante->id)
+                ->where(
+                    'leccion_id',
+                    $recomendacion->leccion_id
+                )
+                ->whereNotNull('intento_diagnostico_id')
+                ->first();
 
+            if (
+                !$seguimiento ||
+                !$seguimiento->activo ||
+                $seguimiento->estado_actual === 'S4'
+            ) {
+                throw ValidationException::withMessages([
+                    'asignacion' =>
+                        'No existe un seguimiento IOP activo '
+                        .'para entregar este ejercicio.',
+                ]);
+            }
+
+            $cicloVigente = IopCicloRefuerzo::query()
+                ->where('seguimiento_id', $seguimiento->id)
+                ->where('ciclo', $seguimiento->ciclo_actual)
+                ->where(
+                    'recomendacion_id',
+                    $recomendacion->id
+                )
+                ->exists();
+
+            if (!$cicloVigente) {
+                throw ValidationException::withMessages([
+                    'asignacion' =>
+                        'El ejercicio no corresponde '
+                        .'al ciclo de refuerzo vigente.',
+                ]);
+            }
             // En esta versión solo aceptamos entregas
             // nuevas o correcciones solicitadas.
             if (!in_array(

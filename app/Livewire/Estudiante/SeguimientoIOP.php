@@ -79,10 +79,25 @@ class SeguimientoIOP extends Component
         
         // Buscar el ciclo de refuerzo más reciente.
         // Solo se consideran ciclos del seguimiento
-        // correspondiente al estudiante autenticado.
+        // correspondiente al estudiante autenticado.        
+        if (
+            !$seguimiento->activo ||
+            $seguimiento->estado_actual === 'S4'
+        ) {
+            $this->addError(
+                'respuesta',
+                'Tu seguimiento ya está consolidado.'
+            );
+
+            return;
+        }
+
         $ciclo = $seguimiento->ciclosRefuerzo()
             ->with('recomendacion.asignacionRefuerzo')
-            ->orderByDesc('ciclo')
+            ->where(
+                'ciclo',
+                $seguimiento->ciclo_actual
+            )
             ->first();
 
         if ($ciclo) {
@@ -164,16 +179,20 @@ class SeguimientoIOP extends Component
         // Obtener el ciclo de refuerzo más reciente.
         
         $cicloRefuerzo = $seguimiento
-        ? $seguimiento->ciclosRefuerzo->last()
-        : null;
-
+            ? $seguimiento->ciclosRefuerzo
+                ->firstWhere(
+                    'ciclo',
+                    (int) $seguimiento->ciclo_actual
+                )
+            : null;
 
         // Mostrar la recomendación del ciclo vigente.
         $recomendacion = $cicloRefuerzo
             ?->recomendacion;
 
         // Compatibilidad con seguimientos anteriores.
-        if (!$recomendacion && $seguimiento) {
+        if (!$recomendacion &&$seguimiento &&$seguimiento->activo) 
+        {
             $recomendacion = IopRecomendacion::query()
                 ->whereKey(
                     $seguimiento->recomendacion_inicial_id
@@ -191,19 +210,22 @@ class SeguimientoIOP extends Component
             ?->ejercicio;
 
 
-        // Última matriz basada en evaluaciones reales.
+        
+        // Última matriz real disponible para la lección.
         $matrizReal = IopMatrizMarkov::query()
             ->where('leccion_id', $this->leccionId)
             ->where('origen', 'evaluacion')
-            ->latest('id')
+            ->orderByDesc('version')
+            ->orderByDesc('id')
             ->first();
 
         $proyeccion = null;
+        $fuenteProyeccion = 'hipotetica';
+        $versionMatriz = null;
 
         if ($seguimiento) {
             $markov = app(MarkovService::class);
 
-            // Proyectar desde el estado actual.
             $vectorActual = match (
                 $seguimiento->estado_actual
             ) {
@@ -215,14 +237,37 @@ class SeguimientoIOP extends Component
             };
 
             if ($vectorActual !== null) {
-                // Proyección ilustrativa con matriz hipotética.
+
+                // Por defecto, ejemplo matemático.
+                $matrizSeleccionada =
+                    MarkovService::MATRIZ_EJEMPLO;
+
+                // Una matriz estimada solo se puede usar
+                // si sus cuatro filas son válidas.
+                if (
+                    $matrizReal &&
+                    $matrizReal->completa &&
+                    is_array($matrizReal->probabilidades)
+                ) {
+                    $markov->validarMatriz(
+                        $matrizReal->probabilidades
+                    );
+
+                    $matrizSeleccionada =
+                        $matrizReal->probabilidades;
+
+                    $fuenteProyeccion = 'real';
+                    $versionMatriz = $matrizReal->version;
+                }
+
                 $proyeccion = $markov->proyectar(
                     $vectorActual,
-                    MarkovService::MATRIZ_EJEMPLO,
-                    $this->ciclos
+                    $matrizSeleccionada,
+                    max(1, min(10, $this->ciclos))
                 );
             }
         }
+
 
         // Datos históricos, únicamente del seguimiento
         // perteneciente al estudiante autenticado.
@@ -250,6 +295,8 @@ class SeguimientoIOP extends Component
                 'cicloRefuerzo' => $cicloRefuerzo,
                 'historialRefuerzos' => $historialRefuerzos,
                 'evaluacionesPorCiclo' => $evaluacionesPorCiclo,
+                'fuenteProyeccion' => $fuenteProyeccion,
+                'versionMatriz' => $versionMatriz,
 
             ]
         );

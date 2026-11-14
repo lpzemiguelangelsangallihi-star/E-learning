@@ -12,15 +12,33 @@
         </p>
     </div>
 
-    @if (!$seguimiento)
+    @if (!$seguimiento)        
+        <div class="rounded-xl border border-blue-200
+                    bg-blue-50 p-6">
 
-        <div class="rounded-lg border bg-white p-6">
-            <p class="text-gray-600">
-                Todavía no tienes un seguimiento
+            <h2 class="text-lg font-bold text-blue-900">
+                Comienza tu aprendizaje adaptativo
+            </h2>
+        
+            <p class="mt-2 text-sm text-blue-800">
+                Todavía no tienes un seguimiento IOP
                 registrado para esta lección.
             </p>
+        
+            <p class="mt-3 text-sm text-blue-800">
+                Primero debes completar el examen
+                diagnóstico asignado por tu profesor.
+                Con el resultado, el sistema podrá
+                seleccionar una actividad de refuerzo.
+            </p>
+        
+            <p class="mt-3 text-xs text-blue-700">
+                Encontrarás el examen en la sección
+                de evaluaciones de la lección, si
+                ya está disponible.
+            </p>
+        
         </div>
-
     @else
 
         {{-- RESUMEN MAXIMIN Y MARKOV --}}
@@ -63,7 +81,57 @@
                     Ciclo actual:
                     {{ $seguimiento->ciclo_actual }}
                 </p>
+            
             </div>
+
+            {{-- EXPLICACIÓN DE LOS ESTADOS MARKOV --}}
+
+            <details class="rounded-lg border bg-white p-4">
+
+                <summary class="cursor-pointer font-semibold
+                                text-gray-900">
+                    ¿Qué significan los estados S1, S2, S3 y S4?
+                </summary>
+
+                <div class="mt-4 grid gap-3 sm:grid-cols-2">
+
+                    <div class="rounded-md bg-gray-50 p-3">
+                        <strong>S1 — Refuerzo inicial</strong>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Calificación entre 0 y 50.
+                        </p>
+                    </div>
+
+                    <div class="rounded-md bg-gray-50 p-3">
+                        <strong>S2 — En desarrollo</strong>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Calificación mayor que 50
+                            y menor que 70.
+                        </p>
+                    </div>
+
+                    <div class="rounded-md bg-gray-50 p-3">
+                        <strong>S3 — Rendimiento satisfactorio</strong>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Calificación entre 70 y 100,
+                            sin consolidación todavía.
+                        </p>
+                    </div>
+
+                    <div class="rounded-md bg-gray-50 p-3">
+                        <strong>S4 — Aprendizaje consolidado</strong>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Dos evaluaciones reales consecutivas
+                            con nota mínima de 70 y sus
+                            refuerzos previamente aprobados.
+                        </p>
+                    </div>
+
+                </div>
+
+            </details>
+
+            @if ($seguimiento && $cicloRefuerzo)
 
         </div>
 
@@ -89,6 +157,60 @@
             </div>
         @endif
 
+        {{-- GUÍA DEL SIGUIENTE PASO --}}
+
+        @php
+            $estadoAsignacion = $asignacion?->estado;
+
+            $mensajeSiguientePaso = match (true) {
+                $seguimiento->estado_actual === 'S4' =>
+                    'Has alcanzado el estado de aprendizaje consolidado. Puedes consultar tu historial académico.',
+            
+                !$cicloRefuerzo || !$asignacion =>
+                    'Tu ciclo actual no tiene una actividad disponible. Comunícate con tu profesor.',
+            
+                $estadoAsignacion === 'asignado' =>
+                    'Lee las instrucciones, resuelve el ejercicio y envía tu respuesta.',
+            
+                $estadoAsignacion === 'requiere_correccion' =>
+                    'Revisa las observaciones del profesor, corrige tu respuesta y vuelve a enviarla.',
+            
+                $estadoAsignacion === 'en_revision' =>
+                    'Tu ejercicio fue entregado. Espera la revisión de tu profesor.',
+            
+                $estadoAsignacion === 'completado' =>
+                    'Tu ejercicio fue aprobado. El siguiente paso es realizar la evaluación IOP de refuerzo correspondiente a esta lección.',
+            
+                default =>
+                    'Consulta el estado de tu actividad con tu profesor.',
+            };
+        @endphp
+
+        <div class="rounded-xl border border-blue-200
+                    bg-blue-50 p-5">
+        
+            <div class="flex items-start gap-3">
+            
+                <div class="flex h-10 w-10 shrink-0
+                            items-center justify-center
+                            rounded-lg bg-blue-100 text-blue-700">
+                    <i class="fa-solid fa-route"
+                       aria-hidden="true"></i>
+                </div>
+            
+                <div>
+                    <h2 class="font-bold text-blue-900">
+                        Tu siguiente paso
+                    </h2>
+                
+                    <p class="mt-2 text-sm text-blue-800">
+                        {{ $mensajeSiguientePaso }}
+                    </p>
+                </div>
+            
+            </div>
+        
+        </div>
         {{-- EJERCICIO DE REFUERZO ASIGNADO --}}
             
         <div class="rounded-lg border bg-white p-5">
@@ -840,13 +962,52 @@
             <h2 class="text-lg font-semibold">
                 Proyección de Markov
             </h2>
+   
+            @if ($fuenteProyeccion === 'real')
 
-            <p class="mt-1 text-sm text-amber-700">
-                Ejemplo matemático con matriz hipotética.
-                No representa una predicción basada
-                en evaluaciones reales.
-            </p>
+                <div class="mt-3 rounded-lg border
+                            border-green-200 bg-green-50 p-4">
 
+                    <p class="font-semibold text-green-900">
+                        Proyección basada en datos reales
+                    </p>
+                
+                    <p class="mt-1 text-sm text-green-800">
+                        Matriz Markov estimada a partir de
+                        transiciones académicas registradas
+                        en esta lección.
+                    
+                        Versión:
+                        {{ $versionMatriz }}.
+                    </p>
+                
+                    <p class="mt-2 text-xs text-green-800">
+                        Es una estimación estadística,
+                        no una garantía del rendimiento futuro.
+                    </p>
+                
+                </div>
+            
+            @else
+            
+                <div class="mt-3 rounded-lg border
+                            border-amber-200 bg-amber-50 p-4">
+            
+                    <p class="font-semibold text-amber-900">
+                        Simulación matemática
+                    </p>
+                
+                    <p class="mt-1 text-sm text-amber-800">
+                        La proyección utiliza una matriz
+                        de ejemplo. No representa una
+                        predicción basada en evaluaciones
+                        reales de esta lección.
+                    </p>
+                
+                </div>
+            
+            @endif
+            
             <div class="mt-4">
                 <label class="text-sm font-medium">
                     Ciclos adicionales

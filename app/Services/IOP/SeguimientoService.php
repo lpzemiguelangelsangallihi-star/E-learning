@@ -10,26 +10,29 @@ use App\Models\IopTransicion;
 use Illuminate\Validation\ValidationException;
 
 class SeguimientoService
-{
+{    
     /**
-     * Clasifica una nota entera entre 0 y 100.
+     * Clasifica una calificación normalizada
+     * entre 0 y 100, incluyendo decimales.
+     *
+     * S4 se alcanza mediante el servicio de
+     * consolidación, no por esta clasificación.
      */
     public function clasificarEstado(float $nota): string
     {
         if (
             !is_finite($nota) ||
             $nota < 0 ||
-            $nota > 100 ||
-            floor($nota) !== $nota
+            $nota > 100
         ) {
             throw new InvalidArgumentException(
-                'La calificación debe ser un entero entre 0 y 100.'
+                'La calificación debe estar entre 0 y 100.'
             );
         }
 
         return match (true) {
             $nota <= 50 => 'S1',
-            $nota <= 69 => 'S2',
+            $nota < 70 => 'S2',
             default => 'S3',
         };
     }
