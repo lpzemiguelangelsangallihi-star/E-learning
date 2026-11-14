@@ -78,13 +78,29 @@ class PanelSeguimientoIOP extends Component
                 ->where('activo', false)
                 ->count(),
 
-            'en_revision' => (clone $base)
-                ->whereHas(
-                    'ciclosRefuerzo.recomendacion.asignacionRefuerzo',
-                    fn ($query) => $query->where(
-                        'estado',
-                        'en_revision'
-                    )
+            'en_revision' => $this->conRefuerzoActual(
+                clone $base,
+                'en_revision'
+            )->count(),
+
+            'correcciones' => $this->conRefuerzoActual(
+                clone $base,
+                'requiere_correccion'
+            )->count(),
+
+            'sin_asignacion' => (clone $base)
+                ->where('activo', true)
+                ->whereDoesntHave(
+                    'ciclosRefuerzo',
+                    function (Builder $ciclos) {
+                        $ciclos->whereColumn(
+                            'iop_ciclos_refuerzo.ciclo',
+                            'iop_seguimientos.ciclo_actual'
+                        )
+                        ->whereHas(
+                            'recomendacion.asignacionRefuerzo'
+                        );
+                    }
                 )
                 ->count(),
         ];
@@ -100,12 +116,9 @@ class PanelSeguimientoIOP extends Component
             $consulta->where('estado_actual', 'S4')
                 ->where('activo', false);
         } elseif ($this->filtro === 'en_revision') {
-            $consulta->whereHas(
-                'ciclosRefuerzo.recomendacion.asignacionRefuerzo',
-                fn ($query) => $query->where(
-                    'estado',
-                    'en_revision'
-                )
+            $this->conRefuerzoActual(
+                $consulta,
+                'en_revision'
             );
         }
 
@@ -164,6 +177,34 @@ class PanelSeguimientoIOP extends Component
                 'seguimientos' => $seguimientos,
                 'estadisticas' => $estadisticas,
             ]
+        );
+    }
+
+    /**
+     * Filtra seguimientos cuya actividad del
+     * ciclo vigente tiene un estado determinado.
+     */
+    private function conRefuerzoActual(
+        Builder $consulta,
+        string $estado
+    ): Builder {
+        return $consulta->whereHas(
+            'ciclosRefuerzo',
+            function (Builder $ciclos) use ($estado) {
+                $ciclos
+                    ->whereColumn(
+                        'iop_ciclos_refuerzo.ciclo',
+                        'iop_seguimientos.ciclo_actual'
+                    )
+                    ->whereHas(
+                        'recomendacion.asignacionRefuerzo',
+                        fn (Builder $asignaciones) =>
+                            $asignaciones->where(
+                                'estado',
+                                $estado
+                            )
+                    );
+            }
         );
     }
 }

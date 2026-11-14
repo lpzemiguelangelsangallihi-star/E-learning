@@ -217,7 +217,8 @@
                     ['Exámenes', 'professor.exams.index', 'professor.exams.*', 'fa-file-pen'],
                     ['Tareas', 'professor.tasks.index', 'professor.tasks.*', 'fa-clipboard-list'],
                     ['Reportes', 'professor.reports.index', 'professor.reports.*', 'fa-chart-pie'],
-                    ['Refuerzos IOP', 'professor.iop.refuerzos', 'professor.iop.*', 'fa-brain'],
+                    ['Supervisión IOP','professor.iop.seguimientos','professor.iop.seguimientos*','fa-chart-line'],
+                    ['Refuerzos IOP','professor.iop.refuerzos','professor.iop.refuerzos','fa-brain'],
                 ] as [$navEtiqueta, $navRuta, $navPatron, $navIcono])
                     <a
                         href="{{ route($navRuta) }}"

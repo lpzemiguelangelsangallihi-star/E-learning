@@ -55,6 +55,6 @@ public function up(): void
      */
     public function down(): void
     {
-        Schema::dropIfExists('iop_recomendacions');
+        Schema::dropIfExists('iop_recomendaciones');
     }
 };

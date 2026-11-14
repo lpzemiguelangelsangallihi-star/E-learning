@@ -12,6 +12,35 @@
         </p>
     </div>
 
+    <div class="flex flex-wrap items-center gap-3">
+    
+        <a
+            href="{{ route('professor.iop.reportes.exportar') }}"
+            class="inline-flex items-center gap-2
+                   rounded-lg bg-blue-600 px-4 py-2.5
+                   text-sm font-semibold text-white
+                   hover:bg-blue-700"
+        >
+            <i class="fa-solid fa-file-csv"
+               aria-hidden="true"></i>
+    
+            Exportar reporte IOP
+        </a>
+    
+        <a
+            href="{{ route('professor.iop.refuerzos') }}"
+            class="inline-flex items-center gap-2
+                   rounded-lg border border-gray-300
+                   bg-white px-4 py-2.5 text-sm
+                   font-semibold text-gray-700
+                   hover:bg-gray-50"
+        >
+            Revisar actividades
+        </a>
+    
+    </div>
+
+
     {{-- INDICADORES GENERALES --}}
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -36,6 +65,49 @@
         @endforeach
 
     </div>
+
+    {{-- ALERTAS ACADÉMICAS IOP --}}
+
+    @if (
+        $estadisticas['correcciones'] > 0 ||
+        $estadisticas['sin_asignacion'] > 0
+    )
+        <div class="rounded-lg border border-amber-200
+                    bg-amber-50 p-5">
+
+            <h2 class="font-semibold text-amber-900">
+                Situaciones que requieren atención
+            </h2>
+
+            <div class="mt-3 space-y-2 text-sm
+                        text-amber-900">
+
+                @if ($estadisticas['correcciones'] > 0)
+                    <p>
+                        {{ $estadisticas['correcciones'] }}
+                        seguimiento(s) tienen una actividad
+                        del ciclo vigente que requiere corrección.
+                    </p>
+                @endif
+
+                @if ($estadisticas['sin_asignacion'] > 0)
+                    <p>
+                        {{ $estadisticas['sin_asignacion'] }}
+                        seguimiento(s) activos no tienen
+                        una actividad asignada al ciclo vigente.
+                    </p>
+                @endif
+
+            </div>
+
+            <p class="mt-3 text-xs text-amber-800">
+                Estas alertas son informativas.
+                No modifican automáticamente los seguimientos.
+            </p>
+
+        </div>
+    @endif
+
 
     {{-- FILTROS --}}
 
@@ -196,13 +268,28 @@
                             </td>
 
                             <td class="p-4">
-                                <a
-                                    href="{{ route('professor.iop.refuerzos') }}"
-                                    class="font-semibold text-blue-700
-                                           hover:underline"
-                                >
-                                    Revisar refuerzos
-                                </a>
+                                <div class="flex flex-col gap-2">
+                                
+                                    <a
+                                        href="{{ route(
+                                            'professor.iop.seguimientos.detalle',
+                                            ['seguimientoId' => $seguimiento->id]
+                                        ) }}"
+                                        class="font-semibold text-blue-700
+                                               hover:underline"
+                                    >
+                                        Ver progreso
+                                    </a>
+                                
+                                    <a
+                                        href="{{ route('professor.iop.refuerzos') }}"
+                                        class="text-sm text-gray-600
+                                               hover:underline"
+                                    >
+                                        Revisar refuerzos
+                                    </a>
+                                
+                                </div>
                             </td>
 
                         </tr>

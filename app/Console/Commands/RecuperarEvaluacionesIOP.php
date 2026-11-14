@@ -11,10 +11,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 class RecuperarEvaluacionesIOP extends Command
-{
+{   
     protected $signature = 'iop:recuperar-evaluaciones
-                            {--execute : Procesar los intentos pendientes}
-                            {--limit=100 : Máximo de pendientes por ejecución}';
+                            {--execute : Procesar el intento seleccionado}
+                            {--intento= : ID del intento que se desea recuperar}
+                            {--limit=100 : Máximo de pendientes a mostrar}';
+
 
     protected $description =
         'Detecta y recupera evaluaciones IOP finalizadas no procesadas';
@@ -23,6 +25,38 @@ class RecuperarEvaluacionesIOP extends Command
         IntegracionEvaluacionIOPService $integracion
     ): int {
         $ejecutar = (bool) $this->option('execute');
+
+        $opcionIntento = $this->option('intento');
+
+        $intentoFiltro = null;
+
+        if ($opcionIntento !== null) {
+            $id = filter_var(
+                $opcionIntento,
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1]]
+            );
+
+            if ($id === false) {
+                $this->error(
+                    'El ID del intento debe ser un entero positivo.'
+                );
+
+                return self::FAILURE;
+            }
+
+            $intentoFiltro = $id;
+        }
+
+        // Prohibir recuperaciones masivas accidentales.
+        if ($ejecutar && $intentoFiltro === null) {
+            $this->error(
+                'Para recuperar una evaluación debes indicar '
+                .'--intento=ID junto con --execute.'
+            );
+
+            return self::FAILURE;
+        }
 
         $limite = filter_var(
             $this->option('limit'),
@@ -51,8 +85,16 @@ class RecuperarEvaluacionesIOP extends Command
 
         // Orden cronológico para conservar la secuencia
         // de diagnóstico y evaluaciones posteriores.
-        $intentos = IntentoExamen::query()
-            ->with('examen')
+        
+            $intentos = IntentoExamen::query()
+                ->with('examen')
+                ->when(
+                    $intentoFiltro !== null,
+                    fn ($query) => $query->whereKey(
+                        $intentoFiltro
+                    )
+                )
+            
             ->where('estado', 'finalizado')
             ->whereNotNull('fecha_fin')
             ->whereNotNull('calificacion')

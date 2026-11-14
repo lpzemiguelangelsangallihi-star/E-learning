@@ -19,6 +19,7 @@ use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\RecommendationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Professor\ReporteIOPController;
 
 /*
 |--------------------------------------------------------------------------
@@ -203,6 +204,39 @@ Route::middleware([
         
         Route::get('/iop/lecciones/{leccionId}/ejercicios',function (int $leccionId) {return view('professor.iop.catalogo', 
         ['leccionId'=>$leccionId,]);})->whereNumber('leccionId')->name('iop.catalogo');
+
+
+Route::get(
+    '/iop/seguimientos/{seguimientoId}',
+    function (int $seguimientoId) {
+        $seguimiento = \App\Models\IopSeguimiento::query()
+            ->whereKey($seguimientoId)
+            ->whereHas(
+                'leccion.modulo.curso',
+                fn ($query) => $query->where(
+                    'profesor_id',
+                    \Illuminate\Support\Facades\Auth::id()
+                )
+            )
+            ->whereNotNull('intento_diagnostico_id')
+            ->with([
+                'estudiante',
+                'leccion.modulo.curso',
+                'transiciones',
+                'ciclosRefuerzo.recomendacion.asignacionRefuerzo.ejercicio',
+            ])
+            ->firstOrFail();
+
+        return view('professor.iop.detalle-seguimiento', [
+            'seguimiento' => $seguimiento,
+        ]);
+    }
+)
+    ->whereNumber('seguimientoId')
+    ->name('iop.seguimientos.detalle');
+
+
+        Route::get('/iop/reportes/exportar',[ReporteIOPController::class, 'exportar'])->name('iop.reportes.exportar');
 
     });
 
