@@ -1053,17 +1053,51 @@
 
             @endif
 
-            <div class="mt-5 rounded-md bg-gray-50 p-3 text-sm">
-
-                <p>
-                    Matriz real:
-
-                    @if ($matrizReal && $matrizReal->completa)
-                        Disponible
+                <div class="mt-5 rounded-md bg-gray-50 p-4 text-sm">
+                
+                    @if (!$matrizReal)
+                        <p class="font-semibold text-gray-700">
+                            Matriz real no disponible
+                        </p>
+                        <p class="mt-1 text-gray-600">
+                            Todavía no se ha generado una matriz
+                            estadística para esta lección.
+                        </p>
+                    
+                    @elseif (!$matrizActualizada)
+                        <p class="font-semibold text-amber-800">
+                            Matriz pendiente de actualización
+                        </p>
+                        <p class="mt-1 text-gray-600">
+                            Se registraron nuevas evaluaciones desde
+                            el último cálculo. Se utiliza únicamente
+                            la simulación matemática hasta actualizar
+                            la matriz.
+                        </p>
+                    
+                    @elseif (!$matrizReal->completa)
+                        <p class="font-semibold text-amber-800">
+                            Observaciones insuficientes
+                        </p>
+                        <p class="mt-1 text-gray-600">
+                            La matriz real existe, pero aún no tiene
+                            suficientes observaciones para estimar
+                            todas las transiciones.
+                        </p>
+                    
                     @else
-                        No disponible o incompleta
+                        <p class="font-semibold text-green-800">
+                            Matriz real disponible y actualizada
+                        </p>
+                        <p class="mt-1 text-gray-600">
+                            Versión {{ $matrizReal->version }}.
+                            Calculada el
+                            {{ $matrizReal->fecha_calculo?->format('d/m/Y H:i') }}.
+                        </p>
                     @endif
-                </p>
+                    
+                </div>
+
 
                 <p class="mt-1 text-gray-600">
                     Las estimaciones reales se habilitarán

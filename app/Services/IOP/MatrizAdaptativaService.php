@@ -6,6 +6,16 @@ use InvalidArgumentException;
 
 class MatrizAdaptativaService
 {
+
+    /**
+     * Versión de la política experimental
+     * de adaptación de utilidades.
+     *
+     * Cambiarla cuando cambien umbrales,
+     * bonificaciones o criterios pedagógicos.
+     */
+    public const VERSION_POLITICA = '1.0.0';
+
     /**
      * Política experimental de adaptación.
      *
