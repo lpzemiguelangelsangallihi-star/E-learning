@@ -43,10 +43,7 @@ class PanelSeguimientoIOP extends Component
         $this->resetPage();
     }
 
-    /**
-     * El profesor únicamente puede consultar
-     * seguimientos de sus propios cursos.
-     */
+
     private function consultaBase(): Builder
     {
         return IopSeguimiento::query()
@@ -107,9 +104,6 @@ class PanelSeguimientoIOP extends Component
 
         $consulta = $this->consultaBase();
 
-        // Los filtros de progreso se aplican únicamente
-        // a la lista; las estadísticas son globales
-        // dentro de los cursos del profesor.
         if ($this->filtro === 'activos') {
             $consulta->where('activo', true);
         } elseif ($this->filtro === 'consolidados') {
@@ -180,10 +174,7 @@ class PanelSeguimientoIOP extends Component
         );
     }
 
-    /**
-     * Filtra seguimientos cuya actividad del
-     * ciclo vigente tiene un estado determinado.
-     */
+    
     private function conRefuerzoActual(
         Builder $consulta,
         string $estado

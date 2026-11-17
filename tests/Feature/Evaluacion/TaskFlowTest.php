@@ -30,9 +30,21 @@ it('no muestra tareas en borrador ni a estudiantes no inscritos', function () {
         ->get(route('student.evaluations.task.show', $borrador))
         ->assertForbidden();
 
-    $this->actingAs(evalUsuario('estudiante'))
-        ->get(route('student.evaluations.task.show', $publicada))
-        ->assertForbidden();
+    
+$otroEstudiante = evalUsuario('estudiante');
+
+$this->flushSession();
+
+$respuesta = $this->actingAs($otroEstudiante)
+    ->get(route('student.evaluations.task.show', $publicada));
+
+dump([
+    'estado' => $respuesta->status(),
+    'redireccion' => $respuesta->headers->get('Location'),
+]);
+
+$respuesta->assertForbidden();
+
 });
 
 it('registra una entrega de texto y la reemplaza al reenviar', function () {
@@ -108,18 +120,39 @@ it('guarda el archivo en almacenamiento privado y solo lo descarga su dueño o e
     $this->get(route('student.evaluations.task.download', $tarea))->assertOk();
 
     // Otro estudiante inscrito, sin entrega, no obtiene nada.
+    
+    // Otro estudiante inscrito, sin entrega,
+    // no puede descargar el archivo.
     $otro = evalUsuario('estudiante');
-    Inscripcion::create(['curso_id' => $esc->curso->id, 'estudiante_id' => $otro->id, 'estado' => 'activo']);
-    $this->actingAs($otro)->get(route('student.evaluations.task.download', $tarea))->assertNotFound();
 
-    // El profesor dueño sí; otro profesor no.
+    Inscripcion::create([
+        'curso_id' => $esc->curso->id,
+        'estudiante_id' => $otro->id,
+        'estado' => 'activo',
+    ]);
+
+    $this->flushSession();
+
+    $this->actingAs($otro)
+        ->get(route('student.evaluations.task.download', $tarea))
+        ->assertNotFound();
+
+    // El profesor propietario sí puede descargarlo.
+    $this->flushSession();
+
     $this->actingAs($esc->profesor)
         ->get(route('professor.tasks.download', [$tarea, $entrega]))
         ->assertOk();
 
-    $this->actingAs(evalUsuario('profesor'))
+    // Un profesor ajeno no tiene autorización.
+    $otroProfesor = evalUsuario('profesor');
+
+    $this->flushSession();
+
+    $this->actingAs($otroProfesor)
         ->get(route('professor.tasks.download', [$tarea, $entrega]))
         ->assertForbidden();
+
 });
 
 it('el profesor califica, el estudiante ve nota y retroalimentación y ya no puede modificar', function () {
@@ -131,6 +164,7 @@ it('el profesor califica, el estudiante ve nota y retroalimentación y ya no pue
 
     $entrega = Entrega::firstOrFail();
 
+    $this->flushSession();
     $this->actingAs($esc->profesor)
         ->put(route('professor.tasks.grade', [$tarea, $entrega]), [
             'calificacion' => 15,
@@ -144,6 +178,7 @@ it('el profesor califica, el estudiante ve nota y retroalimentación y ya no pue
     $cal = Calificacion::where('tarea_id', $tarea->id)->firstOrFail();
     expect((float) $cal->calificacion)->toBe(75.0)->and($cal->tipo)->toBe('tarea');
 
+    $this->flushSession();
     $this->actingAs($esc->estudiante)
         ->get(route('student.evaluations.task.show', $tarea))
         ->assertOk()
@@ -155,6 +190,7 @@ it('el profesor califica, el estudiante ve nota y retroalimentación y ya no pue
     expect($entrega->fresh()->respuesta)->toBe('Mi trabajo');
 
     // Recalificar actualiza la misma calificación (sin duplicar).
+    $this->flushSession();
     $this->actingAs($esc->profesor)
         ->put(route('professor.tasks.grade', [$tarea, $entrega]), ['calificacion' => 18]);
 
@@ -171,13 +207,26 @@ it('rechaza notas superiores al máximo y a profesores ajenos', function () {
 
     $entrega = Entrega::firstOrFail();
 
-    $this->actingAs($esc->profesor)
-        ->put(route('professor.tasks.grade', [$tarea, $entrega]), ['calificacion' => 25])
-        ->assertSessionHasErrors('calificacion');
 
-    $this->actingAs(evalUsuario('profesor'))
-        ->put(route('professor.tasks.grade', [$tarea, $entrega]), ['calificacion' => 10])
-        ->assertForbidden();
+    $this->flushSession();
+
+$this->actingAs($esc->profesor)
+    ->put(route('professor.tasks.grade', [$tarea, $entrega]), [
+        'calificacion' => 25,
+    ])
+    ->assertSessionHasErrors('calificacion');
+
+    
+$otroProfesor = evalUsuario('profesor');
+
+$this->flushSession();
+
+$this->actingAs($otroProfesor)
+    ->put(route('professor.tasks.grade', [$tarea, $entrega]), [
+        'calificacion' => 10,
+    ])
+    ->assertForbidden();
+
 
     expect($entrega->fresh()->estado)->not->toBe('calificada');
 });

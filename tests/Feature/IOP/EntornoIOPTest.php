@@ -62,4 +62,56 @@ test('la asignacion contiene campos para verificar ejercicios', function () {
             "Falta la columna: {$columna}"
         );
     }
+
+});
+
+test('existe la tabla de ciclos de refuerzo IOP', function () {
+    expect(
+        Schema::hasTable('iop_ciclos_refuerzo')
+    )->toBeTrue();
+});
+
+test('los ciclos contienen relaciones esenciales', function () {
+    $columnas = [
+        'seguimiento_id',
+        'ciclo',
+        'recomendacion_id',
+        'transicion_origen_id',
+        'created_at',
+        'updated_at',
+    ];
+
+    foreach ($columnas as $columna) {
+        expect(
+            Schema::hasColumn(
+                'iop_ciclos_refuerzo',
+                $columna
+            )
+        )->toBeTrue(
+            "Falta el campo: {$columna}"
+        );
+    }
+});
+
+test('el seguimiento registra su consolidacion', function () {
+    $columnas = [
+        'estudiante_id',
+        'leccion_id',
+        'estado_actual',
+        'ciclo_actual',
+        'activo',
+        'consolidado_en',
+        'intento_diagnostico_id',
+    ];
+
+    foreach ($columnas as $columna) {
+        expect(
+            Schema::hasColumn(
+                'iop_seguimientos',
+                $columna
+            )
+        )->toBeTrue(
+            "Falta el campo: {$columna}"
+        );
+    }
 });

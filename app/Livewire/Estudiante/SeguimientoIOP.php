@@ -17,16 +17,10 @@ class SeguimientoIOP extends Component
     #[Locked]
     public int $leccionId;
 
-    // Número de ciclos futuros para la proyección Markov.
     public int $ciclos = 3;
 
-    // Respuesta que escribe el estudiante.
     public string $respuesta = '';
 
-    /**
-     * Autoriza el acceso a la lección al montar
-     * el componente.
-     */
     public function mount(
         int $leccionId,
         AccesoLeccionIOPService $acceso
@@ -43,9 +37,7 @@ class SeguimientoIOP extends Component
         $this->leccionId = $leccionId;
     }
 
-    /**
-     * Limita la cantidad de ciclos de proyección.
-     */
+
     public function updatedCiclos(): void
     {
         $this->ciclos = max(
@@ -54,10 +46,6 @@ class SeguimientoIOP extends Component
         );
     }
 
-    /**
-     * Entrega el ejercicio de refuerzo correspondiente
-     * al ciclo académico vigente.
-     */
     public function entregarRefuerzo(
         EntregaRefuerzoService $servicio
     ): void {
@@ -65,7 +53,6 @@ class SeguimientoIOP extends Component
 
         abort_unless($estudiante, 401);
 
-        // Volver a comprobar la autorización.
         app(AccesoLeccionIOPService::class)
             ->autorizar(
                 $estudiante,
@@ -88,8 +75,6 @@ class SeguimientoIOP extends Component
                 'La respuesta no debe superar los 10000 caracteres.',
         ]);
 
-        // Buscar exclusivamente el seguimiento
-        // del estudiante autenticado.
         $seguimiento = IopSeguimiento::query()
             ->where(
                 'estudiante_id',
@@ -104,7 +89,6 @@ class SeguimientoIOP extends Component
             )
             ->firstOrFail();
 
-        // No admitir nuevas entregas después de S4.
         if (
             !$seguimiento->activo ||
             $seguimiento->estado_actual === 'S4'
@@ -117,7 +101,6 @@ class SeguimientoIOP extends Component
             return;
         }
 
-        // Identificar únicamente el ciclo vigente.
         $ciclo = $seguimiento->ciclosRefuerzo()
             ->with(
                 'recomendacion.asignacionRefuerzo'
@@ -139,8 +122,6 @@ class SeguimientoIOP extends Component
 
         $recomendacion = $ciclo->recomendacion;
 
-        // Validar que la recomendación pertenece
-        // realmente a este estudiante y lección.
         abort_unless(
             $recomendacion &&
             (int) $recomendacion->estudiante_id
@@ -163,12 +144,6 @@ class SeguimientoIOP extends Component
             return;
         }
 
-        // El servicio verifica nuevamente:
-        // - Propiedad de la asignación.
-        // - Inscripción del estudiante.
-        // - Estado del curso.
-        // - Ciclo académico vigente.
-        // - Estado permitido de la actividad.
         $servicio->entregar(
             (int) $asignacion->id,
             $estudiante,
@@ -184,12 +159,6 @@ class SeguimientoIOP extends Component
         );
     }
 
-    /**
-     * Renderiza el seguimiento académico.
-     *
-     * Las consultas son de solo lectura.
-     * No se generan nuevas matrices desde Livewire.
-     */
     public function render()
     {
         $estudiante = Auth::user();
@@ -204,7 +173,6 @@ class SeguimientoIOP extends Component
 
         $estudianteId = (int) $estudiante->id;
 
-        // Recuperar el seguimiento real del estudiante.
         $seguimiento = IopSeguimiento::query()
             ->where(
                 'estudiante_id',
@@ -231,11 +199,6 @@ class SeguimientoIOP extends Component
             ])
             ->first();
 
-        /*
-        |--------------------------------------------------------------------------
-        | CICLO VIGENTE
-        |--------------------------------------------------------------------------
-        */
 
         $cicloRefuerzo = null;
         $recomendacion = null;
@@ -247,8 +210,7 @@ class SeguimientoIOP extends Component
             $seguimiento->activo &&
             $seguimiento->estado_actual !== 'S4'
         ) {
-            // No usar el último ciclo histórico:
-            // debe coincidir con ciclo_actual.
+            
             $cicloRefuerzo = $seguimiento
                 ->ciclosRefuerzo
                 ->firstWhere(
@@ -259,8 +221,7 @@ class SeguimientoIOP extends Component
             $recomendacion = $cicloRefuerzo
                 ?->recomendacion;
 
-            // Solo mostrar recomendaciones vinculadas
-            // al seguimiento actual.
+            
             if (
                 $recomendacion &&
                 (
@@ -280,14 +241,7 @@ class SeguimientoIOP extends Component
                 ?->ejercicio;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | MATRIZ MARKOV REAL
-        |--------------------------------------------------------------------------
-        */
-
-        // Recuperar la versión real más reciente
-        // almacenada para esta lección.
+       
         $matrizReal = IopMatrizMarkov::query()
             ->where(
                 'leccion_id',
@@ -301,23 +255,16 @@ class SeguimientoIOP extends Component
             ->orderByDesc('id')
             ->first();
 
-        /*
-        |--------------------------------------------------------------------------
-        | VERIFICAR VIGENCIA
-        |--------------------------------------------------------------------------
-        */
+        
 
         $matrizActualizada = false;
 
         if ($matrizReal) {
-            // Cantidad de transiciones que se utilizaron
-            // al generar la versión almacenada.
+            
             $totalRegistrado = array_sum(
                 $matrizReal->totales ?? []
             );
 
-            // Cantidad actual de transiciones reales
-            // correspondientes a esta lección.
             $totalActual = DB::table(
                 'iop_transiciones as t'
             )
@@ -337,32 +284,24 @@ class SeguimientoIOP extends Component
                 )
                 ->count();
 
-            // Se considera actualizada si no se han
-            // agregado nuevas observaciones.
+            
             $matrizActualizada =
                 (int) $totalRegistrado
                 === (int) $totalActual;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | PROYECCIÓN MARKOV
-        |--------------------------------------------------------------------------
-        */
+        
 
         $proyeccion = null;
 
-        // Identifica qué matriz se utiliza.
+     
         $fuenteProyeccion = 'hipotetica';
 
-        // Versión del modelo real, si está disponible.
         $versionMatriz = null;
 
         if ($seguimiento) {
             $markov = app(MarkovService::class);
 
-            // Construir el vector a partir
-            // del estado académico actual.
             $vectorActual = match (
                 $seguimiento->estado_actual
             ) {
@@ -375,13 +314,10 @@ class SeguimientoIOP extends Component
 
             if ($vectorActual !== null) {
 
-                // La matriz hipotética es la alternativa
-                // para fines exclusivamente ilustrativos.
+
                 $matrizSeleccionada =
                     MarkovService::MATRIZ_EJEMPLO;
 
-                // Emplear una matriz real únicamente
-                // cuando sea completa y esté actualizada.
                 if (
                     $matrizReal &&
                     $matrizReal->completa &&
@@ -390,8 +326,7 @@ class SeguimientoIOP extends Component
                         $matrizReal->probabilidades
                     )
                 ) {
-                    // Verificar que sea estocástica 4x4
-                    // y que S4 sea un estado absorbente.
+                   
                     $markov->validarMatriz(
                         $matrizReal->probabilidades
                     );
@@ -405,7 +340,7 @@ class SeguimientoIOP extends Component
                         (int) $matrizReal->version;
                 }
 
-                // Proyectar de 1 a 10 ciclos futuros.
+
                 $cantidadCiclos = max(
                     1,
                     min(10, $this->ciclos)
@@ -419,20 +354,12 @@ class SeguimientoIOP extends Component
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | HISTORIAL ACADÉMICO
-        |--------------------------------------------------------------------------
-        */
-
-        // Conservar todos los ciclos históricos,
-        // incluso después de la consolidación S4.
+    
         $historialRefuerzos = $seguimiento
             ? $seguimiento->ciclosRefuerzo
             : collect();
 
-        // La evaluación del ciclo N+1 corresponde
-        // al refuerzo realizado en el ciclo N.
+  
         $evaluacionesPorCiclo = $seguimiento
             ? $seguimiento->transiciones->keyBy(
                 fn ($transicion) =>
@@ -440,11 +367,7 @@ class SeguimientoIOP extends Component
             )
             : collect();
 
-        /*
-        |--------------------------------------------------------------------------
-        | VISTA
-        |--------------------------------------------------------------------------
-        */
+  
 
         return view(
             'livewire.estudiante.seguimiento-iop',
@@ -459,31 +382,24 @@ class SeguimientoIOP extends Component
 
                 'cicloRefuerzo' => $cicloRefuerzo,
 
-                'historialRefuerzos' =>
-                    $historialRefuerzos,
+                'historialRefuerzos' =>$historialRefuerzos,
 
-                'evaluacionesPorCiclo' =>
-                    $evaluacionesPorCiclo,
+                'evaluacionesPorCiclo' =>$evaluacionesPorCiclo,
 
                 'matrizReal' => $matrizReal,
 
-                'matrizActualizada' =>
-                    $matrizActualizada,
+                'matrizActualizada' =>$matrizActualizada,
 
                 'proyeccion' => $proyeccion,
 
-                'fuenteProyeccion' =>
-                    $fuenteProyeccion,
+                'fuenteProyeccion' =>$fuenteProyeccion,
 
                 'versionMatriz' => $versionMatriz,
             ]
         );
     }
 
-    /**
-     * Autoriza nuevamente al estudiante en cada
-     * petición posterior de Livewire.
-     */
+
     public function hydrate(): void
     {
         $estudiante = Auth::user();

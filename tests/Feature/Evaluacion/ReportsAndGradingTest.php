@@ -27,18 +27,25 @@ function evalIntentoCompleto(object $esc, object $x, $estudiante, bool $correcto
     return $servicio->finalizar($intento);
 }
 
+
 it('abre la pantalla de reportes del profesor', function () {
+
     $esc = evalEscenario();
 
+    // El profesor propietario puede abrir los reportes.
     $this->actingAs($esc->profesor)
         ->get(route('professor.reports.index'))
         ->assertOk();
 
-    // Un estudiante no entra a los reportes.
+    // Un estudiante no puede acceder a los reportes.
+    // El middleware de roles lo redirige a su panel.
+    $this->flushSession();
+
     $this->actingAs($esc->estudiante)
         ->get(route('professor.reports.index'))
-        ->assertForbidden();
+        ->assertRedirect(route('student.dashboard'));
 });
+
 
 it('calcula el resumen: intentos, estudiantes, promedio y aprobación', function () {
     $esc = evalEscenario();

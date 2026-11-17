@@ -49,7 +49,9 @@ class ConsolidacionSeguimientoIOPService
             if (
                 $ultimas->count() !== 2 ||
                 (int) $ultimas->last()->ciclo
-                    !== (int) $seguimiento->ciclo_actual
+                    !== (int) $seguimiento->ciclo_actual ||
+                (int) $ultimas->first()->ciclo + 1
+                    !== (int) $ultimas->last()->ciclo
             ) {
                 return false;
             }

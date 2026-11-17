@@ -210,6 +210,8 @@ it('no deja entrar a un examen en borrador ni a estudiantes no inscritos', funct
     $publicado = evalExamen($esc, ['titulo' => 'Publicado']);
     $noInscrito = evalUsuario('estudiante');
 
+    $this->flushSession();
+
     $this->actingAs($noInscrito)
         ->get(route('student.evaluations.exam.show', $publicado->examen))
         ->assertForbidden();
@@ -237,6 +239,8 @@ it('un examen cerrado sigue visible solo para quien ya tiene intentos', function
     $sinIntentos = evalUsuario('estudiante');
     \App\Models\Inscripcion::create(['curso_id' => $esc->curso->id, 'estudiante_id' => $sinIntentos->id, 'estado' => 'activo']);
 
+
+    $this->flushSession();
     $this->actingAs($sinIntentos)
         ->get(route('student.evaluations.exam.show', $x->examen))
         ->assertForbidden();

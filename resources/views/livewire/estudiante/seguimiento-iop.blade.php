@@ -131,8 +131,6 @@
 
             </details>
 
-            @if ($seguimiento && $cicloRefuerzo)
-
         </div>
 
         @if ($seguimiento && $cicloRefuerzo)

@@ -20,13 +20,22 @@ test('registration screen cannot be rendered if support is disabled', function (
 }, 'Registration support is enabled.');
 
 test('new users can register', function () {
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-        'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
-    ]);
+    
+\App\Models\Rol::firstOrCreate(
+    ['nombre' => 'estudiante'],
+    ['descripcion' => 'Rol estudiante']
+);
+
+$response = $this->post('/register', [
+    'nombre' => 'Usuario',
+    'apellido_paterno' => 'Prueba',
+    'apellido_materno' => 'Sistema',
+    'email' => 'test@example.com',
+    'password' => 'password',
+    'password_confirmation' => 'password',
+    'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+]);
+
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));

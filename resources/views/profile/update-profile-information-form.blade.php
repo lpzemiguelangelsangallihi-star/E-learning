@@ -28,7 +28,7 @@
 
                 <!-- Current Profile Photo -->
                 <div class="mt-2" x-show="! photoPreview">
-                    <img src="{{ $this->user->profile_photo_url }}" alt="{{ $this->user->name }}" class="rounded-full size-20 object-cover">
+                    <img src="{{ $this->user->profile_photo_url }}" alt="{{ $this->user->nombre_completo }}" class="rounded-full size-20 object-cover">
                 </div>
 
                 <!-- New Profile Photo Preview -->
@@ -52,11 +52,43 @@
             </div>
         @endif
 
-        <!-- Name -->
+        <!-- Nombre -->
         <div class="col-span-6 sm:col-span-4">
-            <x-label for="name" value="{{ __('Name') }}" />
-            <x-input id="name" type="text" class="mt-1 block w-full" wire:model="state.name" required autocomplete="name" />
-            <x-input-error for="name" class="mt-2" />
+            <x-label for="nombre" value="Nombre" />
+            <x-input
+                id="nombre"
+                type="text"
+                class="mt-1 block w-full"
+                wire:model="state.nombre"
+                required
+            />
+            <x-input-error for="nombre" class="mt-2" />
+        </div>      
+
+        <!-- Apellido paterno -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label for="apellido_paterno" value="Apellido paterno" />
+            <x-input
+                id="apellido_paterno"
+                type="text"
+                class="mt-1 block w-full"
+                wire:model="state.apellido_paterno"
+                required
+            />
+            <x-input-error for="apellido_paterno" class="mt-2" />
+        </div>      
+
+        <!-- Apellido materno -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label for="apellido_materno" value="Apellido materno" />
+            <x-input
+                id="apellido_materno"
+                type="text"
+                class="mt-1 block w-full"
+                wire:model="state.apellido_materno"
+                required
+            />
+            <x-input-error for="apellido_materno" class="mt-2" />
         </div>
 
         <!-- Email -->

@@ -136,7 +136,7 @@ class MatrizMarkovService
             if (
                 $ultima &&
                 $ultima->conteos === $estimacion['conteos'] &&
-                $ultima->probabilidades === $estimacion['probabilidades'] &&
+                $ultima->probabilidades == $estimacion['probabilidades'] &&
                 (int) $ultima->minimo_observaciones
                     === $minimoObservaciones
             ) {
