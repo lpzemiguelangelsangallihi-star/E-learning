@@ -60,15 +60,32 @@
 
     <div class="min-h-screen">
 
+        {{-- Overlay móvil --}}
+        <div
+            data-admin-sidebar-overlay
+            class="
+                fixed inset-0
+                z-40
+                hidden
+                bg-slate-950/50
+                lg:hidden
+            "
+        ></div>
+
+
         <aside
+            data-admin-sidebar
             class="
                 fixed inset-y-0 left-0
                 z-50
-                hidden w-64
+                flex w-64
+                -translate-x-full
                 flex-col
                 bg-[#1E3A8A]
                 text-white
-                lg:flex
+                transition-transform
+                duration-200
+                lg:translate-x-0
             "
         >
 
@@ -276,6 +293,7 @@
                     <div
                         class="
                             flex h-10 w-10
+                            shrink-0
                             items-center
                             justify-center
                             rounded-full
@@ -353,31 +371,72 @@
                 "
             >
 
-                <div>
+                <div
+                    class="
+                        flex min-w-0
+                        items-center gap-3
+                    "
+                >
 
-                    <h1
+                    {{-- Menú móvil --}}
+                    <button
+                        type="button"
+                        data-admin-sidebar-toggle
                         class="
-                            text-lg font-bold
-                            text-slate-800
+                            flex h-10 w-10
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-lg
+                            text-slate-600
+                            transition
+                            hover:bg-slate-100
+                            lg:hidden
                         "
+                        aria-label="Abrir menú"
                     >
-                        {{ $title }}
-                    </h1>
 
-                    @if ($description)
-
-                        <p
+                        <i
                             class="
-                                hidden
-                                text-xs
-                                text-slate-500
-                                sm:block
+                                fa-solid
+                                fa-bars
+                            "
+                            aria-hidden="true"
+                        ></i>
+
+                    </button>
+
+
+                    <div class="min-w-0">
+
+                        <h1
+                            class="
+                                truncate
+                                text-lg font-bold
+                                text-slate-800
+                                sm:text-xl
                             "
                         >
-                            {{ $description }}
-                        </p>
+                            {{ $title }}
+                        </h1>
 
-                    @endif
+                        @if ($description)
+
+                            <p
+                                class="
+                                    hidden
+                                    truncate
+                                    text-xs
+                                    text-slate-500
+                                    sm:block
+                                "
+                            >
+                                {{ $description }}
+                            </p>
+
+                        @endif
+
+                    </div>
 
                 </div>
 

@@ -166,7 +166,7 @@
 
         <div class="overflow-x-auto">
 
-            <table class="w-full text-left text-sm">
+            <table class="w-full min-w-[56rem] text-left text-sm">
 
                 <thead class="bg-gray-50 text-gray-700">
                     <tr>

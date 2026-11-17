@@ -92,7 +92,7 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex gap-3">
+                <div class="mt-6 flex flex-col gap-3 sm:flex-row">
                     <x-ui.button type="submit" icon="fa-solid fa-floppy-disk">Guardar tarea</x-ui.button>
                     <x-ui.button :href="route('professor.tasks.index')" variant="secondary">Cancelar</x-ui.button>
                 </div>

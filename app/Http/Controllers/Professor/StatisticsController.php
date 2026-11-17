@@ -21,8 +21,8 @@ class StatisticsController extends Controller
         $desde = $filters['desde'] ?? null;
         $hasta = $filters['hasta'] ?? null;
 
-        $cursos = DB::table('cursos')->where('profesor_id', $profesorId)->orderBy('titulo')->get(['id', 'titulo']);
-        abort_if($cursoId && !$cursos->contains('id', (int) $cursoId), 404);
+        $courses = DB::table('cursos')->where('profesor_id', $profesorId)->orderBy('titulo')->get(['id', 'titulo']);
+        abort_if($cursoId && !$courses->contains('id', (int) $cursoId), 404);
 
         $cursosBase = fn () => DB::table('cursos')->where('profesor_id', $profesorId)->when($cursoId, fn ($q) => $q->where('id', $cursoId));
         $inscripcionesBase = fn () => DB::table('inscripciones as i')->join('cursos as c', 'c.id', '=', 'i.curso_id')

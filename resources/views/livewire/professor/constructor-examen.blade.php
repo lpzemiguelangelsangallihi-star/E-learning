@@ -190,7 +190,7 @@
                 @if ($q_tipo === 'verdadero_falso')
                     <div>
                         <p class="{{ $label }}">Respuesta correcta</p>
-                        <div class="flex gap-6 text-sm text-slate-700">
+                        <div class="flex flex-wrap gap-4 text-sm text-slate-700 sm:gap-6">
                             <label class="flex items-center gap-2">
                                 <input type="radio" value="verdadero" wire:model="q_vf" class="text-[#2563EB] focus:ring-[#2563EB]"> Verdadero
                             </label>
@@ -227,7 +227,7 @@
 
                                     <input type="text" wire:model="q_opciones.{{ $i }}.texto" maxlength="500"
                                         placeholder="{{ $q_tipo === 'respuesta_corta' ? 'Respuesta aceptada' : 'Texto de la opción' }}"
-                                        class="{{ $input }}">
+                                        class="{{ $input }} min-w-0">
 
                                     <button type="button" wire:click="quitarOpcion({{ $i }})" class="{{ $btnIcon }}" title="Quitar">
                                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -248,7 +248,7 @@
 
                 @error('q_opciones') <p class="text-sm text-[#DC2626]">{{ $message }}</p> @enderror
 
-                <div class="flex gap-3">
+                <div class="flex flex-wrap gap-3">
                     <button type="submit" wire:loading.attr="disabled" wire:target="guardarPregunta"
                         class="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1D4ED8] disabled:opacity-60">
                         <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
@@ -273,7 +273,7 @@
             <ol class="space-y-3">
                 @foreach ($preguntas as $n => $pregunta)
                     <li wire:key="pregunta-{{ $pregunta->id }}" class="rounded-xl border border-slate-200 p-4">
-                        <div class="flex items-start justify-between gap-3">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div class="min-w-0">
                                 <div class="mb-1 flex flex-wrap items-center gap-2">
                                     <span class="text-xs font-bold text-slate-400">#{{ $n + 1 }}</span>

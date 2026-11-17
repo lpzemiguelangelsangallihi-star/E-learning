@@ -57,7 +57,7 @@
 
 
         <div class="overflow-x-auto">
-            <table class="min-w-full text-left text-sm">
+            <table class="min-w-[40rem] text-left text-sm">
                 <thead class="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
                     <tr>
                         <th class="py-3 pr-4 font-semibold">Estudiante</th>

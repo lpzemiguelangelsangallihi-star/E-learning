@@ -13,7 +13,7 @@
             <p class="mt-1 text-sm text-slate-500">Cada examen pertenece a un tema de tus cursos.</p>
         </div>
 
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
             <x-ui.button :href="route('professor.reports.index')" variant="secondary" icon="fa-solid fa-chart-column">Resultados</x-ui.button>
             <x-ui.button :href="route('professor.exams.create')" icon="fa-solid fa-plus">Nuevo examen</x-ui.button>
         </div>
@@ -30,7 +30,7 @@
                 @endforeach
             </select>
 
-            <div class="flex gap-2">
+            <div class="flex flex-col gap-2">
                 <select name="estado" class="{{ $input }}" aria-label="Estado">
                     <option value="">Todos</option>
                     @foreach (['borrador' => 'Borrador', 'publicado' => 'Publicado', 'cerrado' => 'Cerrado'] as $v => $n)

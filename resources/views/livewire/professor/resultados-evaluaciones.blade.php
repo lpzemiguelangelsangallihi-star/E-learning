@@ -70,7 +70,7 @@
                 @if ($filas->isEmpty())
                     <x-ui.empty icon="fa-solid fa-chart-column" title="Sin resultados todavía" text="Cuando los estudiantes entreguen exámenes verás aquí su rendimiento." />
                 @else
-                    <table class="min-w-full divide-y divide-slate-100">
+                    <table class="min-w-[44rem] divide-y divide-slate-100">
                         <thead class="bg-slate-50"><tr>
                             <th class="{{ $th }}">Examen</th><th class="{{ $th }}">Curso</th>
                             <th class="{{ $th }}">Intentos</th><th class="{{ $th }}">Estudiantes</th>
@@ -97,7 +97,7 @@
                 @if ($filas->isEmpty())
                     <x-ui.empty icon="fa-solid fa-user-graduate" title="Sin resultados" text="No hay estudiantes con exámenes entregados para este filtro." />
                 @else
-                    <table class="min-w-full divide-y divide-slate-100">
+                    <table class="min-w-[44rem] divide-y divide-slate-100">
                         <thead class="bg-slate-50"><tr>
                             <th class="{{ $th }}">Estudiante</th><th class="{{ $th }}">Correo</th>
                             <th class="{{ $th }}">Intentos</th><th class="{{ $th }}">Promedio</th>
@@ -123,7 +123,7 @@
                 @if ($filas->isEmpty())
                     <x-ui.empty icon="fa-solid fa-book-open" title="Sin datos por tema" text="Se calcula con las respuestas de los exámenes entregados." />
                 @else
-                    <table class="min-w-full divide-y divide-slate-100">
+                    <table class="min-w-[44rem] divide-y divide-slate-100">
                         <thead class="bg-slate-50"><tr>
                             <th class="{{ $th }}">Tema</th><th class="{{ $th }}">Curso</th>
                             <th class="{{ $th }}">Preguntas</th><th class="{{ $th }}">Logro</th>
@@ -157,7 +157,7 @@
 
             {{-- EN EL TIEMPO --}}
             @elseif ($vista === 'tiempo')
-                <table class="min-w-full divide-y divide-slate-100">
+                <table class="min-w-[28rem] divide-y divide-slate-100">
                     <thead class="bg-slate-50"><tr>
                         <th class="{{ $th }}">Mes</th><th class="{{ $th }}">Intentos</th><th class="{{ $th }}">Promedio</th>
                     </tr></thead>
@@ -188,7 +188,7 @@
                 @if ($filas->isEmpty())
                     <x-ui.empty icon="fa-solid fa-inbox" title="Sin intentos" text="Aún no hay intentos entregados para este filtro." />
                 @else
-                    <table class="min-w-full divide-y divide-slate-100">
+                    <table class="min-w-[44rem] divide-y divide-slate-100">
                         <thead class="bg-slate-50"><tr>
                             <th class="{{ $th }}">Estudiante</th><th class="{{ $th }}">Examen</th>
                             <th class="{{ $th }}">Intento</th><th class="{{ $th }}">Entregado</th>

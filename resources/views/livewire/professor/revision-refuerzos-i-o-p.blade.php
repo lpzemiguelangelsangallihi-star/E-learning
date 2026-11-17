@@ -55,7 +55,7 @@
     <div class="overflow-hidden rounded-lg border bg-white">
 
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
+            <table class="w-full min-w-[44rem] text-left text-sm">
 
                 <thead class="bg-gray-50 text-gray-700">
                     <tr>
@@ -196,7 +196,7 @@
                     </p>
 
                     <div class="mt-2 rounded-md bg-gray-50 p-4">
-                        <p class="whitespace-pre-line text-sm text-gray-700">
+                        <p class="whitespace-pre-line break-words text-sm text-gray-700">
                             {{ $detalle->respuesta_estudiante
                                 ?: 'Sin respuesta registrada.' }}
                         </p>

@@ -14,7 +14,7 @@
 
         {{-- DATOS GENERALES --}}
 
-        <div class="rounded-lg border bg-white p-6">
+        <div class="rounded-lg border bg-white p-5 sm:p-6">
 
             <h2 class="text-xl font-bold text-gray-900">
                 {{ $seguimiento->estudiante?->nombre_completo
@@ -86,7 +86,7 @@
 
 {{-- APRENDIZAJE INDIVIDUAL MAXIMIN --}}
 
-<div class="rounded-lg border bg-white p-6">
+<div class="rounded-lg border bg-white p-5 sm:p-6">
 
     <h2 class="text-lg font-bold text-gray-900">
         Matriz de aprendizaje individual
@@ -104,7 +104,7 @@
 
     <div class="mt-5 overflow-x-auto">
 
-        <table class="w-full text-left text-sm">
+        <table class="w-full min-w-[36rem] text-left text-sm">
             <thead class="bg-gray-50">
                 <tr>
                     <th class="p-3">Tipo de ejercicio</th>
@@ -213,7 +213,7 @@
 
         {{-- HISTORIAL DE CICLOS --}}
 
-        <div class="rounded-lg border bg-white p-6">
+        <div class="rounded-lg border bg-white p-5 sm:p-6">
 
             <h2 class="text-lg font-bold text-gray-900">
                 Historial de refuerzos adaptativos
@@ -323,7 +323,7 @@
                                     Retroalimentación docente
                                 </p>
                                 <p class="mt-1 whitespace-pre-line
-                                          text-sm">
+                                          break-words text-sm">
                                     {{ $asignacion->retroalimentacion }}
                                 </p>
                             </div>

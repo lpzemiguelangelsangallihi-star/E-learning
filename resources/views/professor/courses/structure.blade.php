@@ -72,14 +72,14 @@
 
                     <p
                         id="codigo-clase"
-                        class="mt-2 select-all font-mono text-3xl font-bold tracking-[0.25em] text-[#1E3A8A]"
+                        class="mt-2 select-all break-all font-mono text-2xl font-bold tracking-[0.2em] text-[#1E3A8A] sm:text-3xl sm:tracking-[0.25em]"
                     >{{ $curso->codigo_clase }}</p>
 
                     <p class="mt-2 text-xs text-blue-700">
                         Compártelo con tus estudiantes para que se inscriban.
                     </p>
 
-                    <div class="mt-3 flex items-center gap-2">
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
 
                         <button
                             type="button"
@@ -183,7 +183,7 @@
                 <x-ui.card :padding="false">
 
                     {{-- Cabecera de la unidad --}}
-                    <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
+                    <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-6">
 
                         <div class="flex min-w-0 items-start gap-4">
 

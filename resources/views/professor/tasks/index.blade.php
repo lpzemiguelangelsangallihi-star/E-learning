@@ -27,7 +27,7 @@
                 @endforeach
             </select>
 
-            <div class="flex gap-2">
+            <div class="flex flex-col gap-2">
                 <select name="estado" class="{{ $input }}" aria-label="Estado">
                     <option value="">Todas</option>
                     @foreach (['borrador' => 'Borrador', 'publicada' => 'Publicada', 'cerrada' => 'Cerrada'] as $v => $n)

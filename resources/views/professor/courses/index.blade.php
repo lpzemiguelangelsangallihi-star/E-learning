@@ -441,8 +441,9 @@
                     <div
                         class="
                             mt-5
-                            flex items-center
+                            flex flex-wrap items-center
                             justify-between
+                            gap-3
                             border-t
                             border-slate-100
                             pt-4

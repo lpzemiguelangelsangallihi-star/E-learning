@@ -43,7 +43,7 @@
                     </div>
 
                     @if ($entrega->respuesta)
-                        <p class="mb-3 whitespace-pre-line rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{{ $entrega->respuesta }}</p>
+                        <p class="mb-3 whitespace-pre-line break-words rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{{ $entrega->respuesta }}</p>
                     @endif
 
                     @if ($entrega->archivo)
