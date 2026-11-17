@@ -137,6 +137,18 @@ test('diagnostico genera Maximin y ciclo inicial', function () {
     expect(IopSeguimiento::count())->toBe(1);
     expect(IopRecomendacion::count())->toBe(1);
     expect(IopCicloRefuerzo::count())->toBe(1);
+
+
+$this->actingAs($esc->profesor)
+    ->get(route(
+        'professor.iop.seguimientos.detalle',
+        ['seguimientoId' => $seguimiento->id]
+    ))
+    ->assertOk()
+    ->assertSee('Matriz de aprendizaje individual')
+    ->assertSee('Pendiente de explorar')
+    ->assertSee('El estudiante todavía no tiene');
+
 });
 
 /*
@@ -214,6 +226,30 @@ test('dos evaluaciones reales con refuerzos aprobados alcanzan S4', function () 
         ->where('ciclo', 1)
         ->with('recomendacion.asignacionRefuerzo')
         ->firstOrFail();
+
+
+$evidencia = app(
+    \App\Services\IOP\MatrizPersonalIOPService::class
+)->evidencia(
+    $esc->estudiante->id,
+    $esc->leccion->id
+);
+
+expect($evidencia['teorico']['observaciones'])
+    ->toBe(1);
+
+expect($evidencia['teorico']['mejora_promedio'])
+    ->toBe(30.0);
+
+expect($evidencia['practico']['observaciones'])
+    ->toBe(0);
+
+expect($evidencia['visual']['observaciones'])
+    ->toBe(0);
+
+expect($ciclo1->recomendacion->alternativa_recomendada)
+    ->toBe('visual');
+
 
     expect($ciclo1->recomendacion->asignacionRefuerzo)
         ->not->toBeNull();
@@ -316,38 +352,49 @@ test('dos evaluaciones reales con refuerzos aprobados alcanzan S4', function () 
 
 
     // Persistencia y versionado de la matriz Markov.
+    
+    // Markov debe actualizarse automáticamente
+    // después de cada evaluación real.
+
+    $matricesGuardadas = IopMatrizMarkov::query()
+        ->where('leccion_id', $esc->leccion->id)
+        ->where('origen', 'evaluacion')
+        ->orderBy('version')
+        ->get();
+
+    expect($matricesGuardadas->count())->toBe(2);
+
+    $primeraMatriz = $matricesGuardadas->first();
+    $ultimaMatriz = $matricesGuardadas->last();
+
+    expect($primeraMatriz->version)->toBe(1);
+    expect(array_sum($primeraMatriz->totales))->toBe(1);
+
+    expect($ultimaMatriz->version)->toBe(2);
+    expect($ultimaMatriz->completa)->toBeFalse();
+    expect(array_sum($ultimaMatriz->totales))->toBe(2);
+
+    expect($ultimaMatriz->conteos[0][2])->toBe(1);
+    expect($ultimaMatriz->conteos[2][3])->toBe(1);
+
+    // Volver a actualizar sin nuevas transiciones
+    // no debe generar otra versión.
+
     $matrices = app(MatrizMarkovService::class);
 
-    $primera = $matrices->actualizarLeccion(
+    $resultado = $matrices->actualizarLeccion(
         (int) $esc->leccion->id,
         1
     );
 
-    expect($primera['accion'])->toBe('creada');
-
-    $matrizGuardada = $primera['matriz'];
-
-    expect($matrizGuardada->version)->toBe(1);
-    expect($matrizGuardada->origen)->toBe('evaluacion');
-    expect($matrizGuardada->completa)->toBeFalse();
-
-    expect(array_sum($matrizGuardada->totales))->toBe(2);
-
-    // Repetir el cálculo con los mismos datos
-    // no debe crear una segunda versión.
-    $segunda = $matrices->actualizarLeccion(
-        (int) $esc->leccion->id,
-        1
-    );
-
-    expect($segunda['accion'])->toBe('sin_cambios');
+    expect($resultado['accion'])->toBe('sin_cambios');
 
     expect(
-        IopMatrizMarkov::where(
-            'leccion_id',
-            $esc->leccion->id
-        )->where('origen', 'evaluacion')->count()
-    )->toBe(1);
+        IopMatrizMarkov::query()
+            ->where('leccion_id', $esc->leccion->id)
+            ->where('origen', 'evaluacion')
+            ->count()
+    )->toBe(2);
 
 
     

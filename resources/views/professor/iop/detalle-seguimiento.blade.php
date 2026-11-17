@@ -84,6 +84,133 @@
 
         </div>
 
+{{-- APRENDIZAJE INDIVIDUAL MAXIMIN --}}
+
+<div class="rounded-lg border bg-white p-6">
+
+    <h2 class="text-lg font-bold text-gray-900">
+        Matriz de aprendizaje individual
+    </h2>
+
+    <p class="mt-2 text-sm text-gray-600">
+        Evidencia obtenida de las evaluaciones reales
+        posteriores a los refuerzos aprobados.
+    </p>
+
+    @php
+        $totalObservaciones = collect($evidencia)
+            ->sum('observaciones');
+    @endphp
+
+    <div class="mt-5 overflow-x-auto">
+
+        <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="p-3">Tipo de ejercicio</th>
+                    <th class="p-3">Observaciones</th>
+                    <th class="p-3">Mejora promedio</th>
+                    <th class="p-3">Estado</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach ([
+                    'teorico' => 'Teórico',
+                    'practico' => 'Práctico',
+                    'visual' => 'Visual',
+                ] as $tipo => $nombre)
+
+                    @php
+                        $fila = $evidencia[$tipo];
+                        $cantidad = $fila['observaciones'];
+                        $mejora = $fila['mejora_promedio'];
+                    @endphp
+
+                    <tr class="border-t">
+                        <td class="p-3 font-semibold">
+                            {{ $nombre }}
+                        </td>
+
+                        <td class="p-3">
+                            {{ $cantidad }}
+                        </td>
+
+                        <td class="p-3">
+                            @if ($mejora !== null)
+                                <span @class([
+                                    'font-semibold',
+                                    'text-green-700' => $mejora > 0,
+                                    'text-red-700' => $mejora < 0,
+                                    'text-gray-700' => $mejora == 0,
+                                ])>
+                                    {{ $mejora > 0 ? '+' : '' }}
+                                    {{ number_format($mejora, 2) }}
+                                    puntos
+                                </span>
+                            @else
+                                <span class="text-gray-400">
+                                    Sin datos
+                                </span>
+                            @endif
+                        </td>
+
+                        <td class="p-3">
+                            @if ($cantidad > 0)
+                                <span class="rounded-full bg-green-100
+                                             px-3 py-1 text-xs
+                                             font-semibold text-green-800">
+                                    Evaluado
+                                </span>
+                            @else
+                                <span class="rounded-full bg-amber-100
+                                             px-3 py-1 text-xs
+                                             font-semibold text-amber-800">
+                                    Pendiente de explorar
+                                </span>
+                            @endif
+                        </td>
+                    </tr>
+
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-5 rounded-lg bg-blue-50 p-4">
+        @if ($totalObservaciones === 0)
+            <p class="text-sm font-medium text-blue-900">
+                El estudiante todavía no tiene
+                observaciones individuales.
+            </p>
+
+            <p class="mt-2 text-sm text-blue-800">
+                La primera recomendación utiliza
+                la política Maximin inicial.
+            </p>
+        @else
+            <p class="text-sm font-medium text-blue-900">
+                Observaciones registradas:
+                {{ $totalObservaciones }}
+            </p>
+
+            <p class="mt-2 text-sm text-blue-800">
+                El sistema utiliza esta evidencia
+                para adaptar las próximas recomendaciones,
+                junto con la política de exploración.
+            </p>
+        @endif
+    </div>
+
+    <p class="mt-3 text-xs text-gray-500">
+        La mejora representa la diferencia entre
+        calificaciones consecutivas. No demuestra
+        por sí sola que el tipo de ejercicio haya
+        causado el cambio.
+    </p>
+
+</div>
+
         {{-- HISTORIAL DE CICLOS --}}
 
         <div class="rounded-lg border bg-white p-6">

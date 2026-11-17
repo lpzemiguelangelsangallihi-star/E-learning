@@ -50,6 +50,21 @@ class DashboardController extends Controller
         ->count(),
 ];
 
+        
+$progressBase = fn () => DB::table('progreso_cursos as p')
+    ->join('cursos as c', 'c.id', '=', 'p.curso_id')
+    ->where('c.profesor_id', $profesorId);
+
+$stats['averageProgress'] = round(
+    (float) ($progressBase()->avg('p.porcentaje') ?? 0),
+    1
+);
+
+$stats['completedStudents'] = $progressBase()
+    ->where('p.estado', 'completado')
+    ->count();
+
+
 
         $recentCourses = Curso::query()
             ->with('materia')

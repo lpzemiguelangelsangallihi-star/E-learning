@@ -11,10 +11,13 @@ use Illuminate\Validation\ValidationException;
 class RecomendacionService
 {
     
-    public function __construct(
-        private MaximinService $maximin,
-        private MatrizAdaptativaService $adaptador
-    ) {}
+    
+public function __construct(
+    private MaximinService $maximin,
+    private MatrizAdaptativaService $adaptador,
+    private MatrizPersonalIOPService $matrizPersonal
+) {}
+
 
 
     public function generar(
@@ -51,10 +54,18 @@ class RecomendacionService
             }
             
             // Construir la matriz adaptada a la nota obtenida.
-            $matrizAdaptada = $this->adaptador->adaptar(
-                $modelo->matriz_utilidades,
-                $calificacion
-            );
+            
+$matrizInicial = $this->adaptador->adaptar(
+    $modelo->matriz_utilidades,
+    $calificacion
+);
+
+$matrizAdaptada = $this->matrizPersonal->adaptar(
+    $matrizInicial,
+    $estudianteId,
+    $leccionId
+);
+
 
             // Aplicar Maximin a las utilidades adaptadas.
             $resultado = $this->maximin->recomendar(

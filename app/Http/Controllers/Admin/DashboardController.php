@@ -52,6 +52,23 @@ class DashboardController extends Controller
         ];
 
 
+$stats['activeEnrollments'] = DB::table('inscripciones')
+    ->where('estado', 'activo')
+    ->count();
+
+$stats['averageProgress'] = round(
+    (float) (
+        DB::table('progreso_cursos')
+            ->avg('porcentaje') ?? 0
+    ),
+    1
+);
+
+$stats['activityEvents'] = DB::table('bitacoras')
+    ->count();
+
+
+
         $recentUsers = User::with('rol')
             ->orderByDesc('creado_en')
             ->take(5)

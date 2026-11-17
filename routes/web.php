@@ -247,9 +247,19 @@ Route::middleware([
                     ])
                     ->firstOrFail();
 
-                return view('professor.iop.detalle-seguimiento', [
-                    'seguimiento' => $seguimiento,
-                ]);
+                
+$evidencia = app(
+    \App\Services\IOP\MatrizPersonalIOPService::class
+)->evidencia(
+    (int) $seguimiento->estudiante_id,
+    (int) $seguimiento->leccion_id
+);
+
+return view('professor.iop.detalle-seguimiento', [
+    'seguimiento' => $seguimiento,
+    'evidencia' => $evidencia,
+]);
+
             }
         )
             ->whereNumber('seguimientoId')

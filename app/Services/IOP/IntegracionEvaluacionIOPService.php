@@ -9,17 +9,21 @@ use App\Models\IopTransicion;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class IntegracionEvaluacionIOPService
 { 
-        public function __construct(
-            private NormalizadorCalificacionService $normalizador,
-            private RecomendacionService $recomendaciones,
-            private SeguimientoService $seguimientos,
-            private ConsolidacionSeguimientoIOPService $consolidacion,
-            private AsignacionRefuerzoService $asignaciones,
-            private CicloRefuerzoService $ciclosRefuerzo
-        ) {}
+        
+public function __construct(
+    private NormalizadorCalificacionService $normalizador,
+    private RecomendacionService $recomendaciones,
+    private SeguimientoService $seguimientos,
+    private ConsolidacionSeguimientoIOPService $consolidacion,
+    private AsignacionRefuerzoService $asignaciones,
+    private CicloRefuerzoService $ciclosRefuerzo,
+    private MatrizMarkovService $matrices
+) {}
+
     /**
      * Obtiene un intento finalizado y su nota en escala 0-100.
      */
@@ -129,10 +133,12 @@ class IntegracionEvaluacionIOPService
      * Verifica el ciclo actual, registra Markov,
      * comprueba S4 y genera el siguiente refuerzo.
      */
-    public function procesarSeguimiento(
-        int $intentoId
-    ): IopTransicion {
-        return DB::transaction(function () use ($intentoId) {
+    
+public function procesarSeguimiento(
+    int $intentoId
+): IopTransicion {
+    $transicion = DB::transaction(function () use ($intentoId) {
+
 
             [$intento, $nota] = $this->obtenerIntento(
                 $intentoId
@@ -368,7 +374,33 @@ class IntegracionEvaluacionIOPService
                 );
             }
 
+            
             return $transicion->refresh();
         });
+
+        // Actualizar la matriz estadística después
+        // de registrar correctamente la transición.
+        // Un fallo estadístico no revierte la evaluación.
+        try {
+            $leccionId = $transicion->seguimiento()
+                ->value('leccion_id');
+
+            if ($leccionId !== null) {
+                $this->matrices->actualizarLeccion(
+                    (int) $leccionId
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::warning(
+                'No se pudo actualizar automáticamente Markov.',
+                [
+                    'transicion_id' => $transicion->id,
+                    'error' => $e->getMessage(),
+                ]
+            );
+        }
+
+        return $transicion;
     }
+
 }
