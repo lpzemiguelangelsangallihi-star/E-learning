@@ -45,6 +45,7 @@ class IopRecomendacion extends Model
             'modelo_decision_id'
         );
     }
+
     public function asignacionRefuerzo(): HasOne
     {
         return $this->hasOne(

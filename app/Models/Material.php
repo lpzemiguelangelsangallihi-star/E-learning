@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
+use App\Support\ArchivosPrivados;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Material extends Model
 {
+    use HasPublicUlid;
+
     protected $table = 'materiales';
 
     public const CREATED_AT = 'creado_en';
@@ -36,7 +40,9 @@ class Material extends Model
     public function getEnlaceAttribute(): ?string
     {
         if ($this->archivo) {
-            return $this->exists ? route('files.material', $this->id) : null;
+            return $this->exists
+                ? ArchivosPrivados::url('files.material', 'material', $this)
+                : null;
         }
 
         return preg_match('#^https?://#i', (string) $this->url) === 1

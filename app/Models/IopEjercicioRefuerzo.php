@@ -34,11 +34,12 @@ class IopEjercicioRefuerzo extends Model
             'leccion_id'
         );
     }
+
     public function asignaciones(): HasMany
     {
         return $this->hasMany(
             IopAsignacionRefuerzo::class,
             'ejercicio_id'
-            );
+        );
     }
 }

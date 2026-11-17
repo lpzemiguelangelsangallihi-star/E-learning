@@ -35,7 +35,7 @@
                             <tr>
                                 <td class="px-6 py-4">
                                     @if ($item['curso'])
-                                        <a href="{{ $item['tipo'] === 'examen' ? route('student.evaluations.exam.result', $item['id']) : route('student.evaluations.task.show', $item['id']) }}"
+                                        <a href="{{ $item['tipo'] === 'examen' ? route('student.evaluations.exam.result', $item['ulid']) : route('student.evaluations.task.show', $item['ulid']) }}"
                                             class="font-semibold text-slate-800 hover:text-[#2563EB] hover:underline">{{ $item['titulo'] }}</a>
                                     @else
                                         <p class="font-semibold text-slate-800">{{ $item['titulo'] }}</p>

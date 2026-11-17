@@ -58,7 +58,7 @@ it('califica los cuatro tipos de pregunta y guarda la nota en calificaciones', f
         ->set("respuestas.{$x->varias->id}", [(string) evalOpcion($x->varias, 'W'), (string) evalOpcion($x->varias, 'X')])
         ->set("respuestas.{$x->corta->id}", 'investigacion')
         ->call('finalizar')
-        ->assertRedirect(route('student.evaluations.exam.result', $intento->id));
+        ->assertRedirect(route('student.evaluations.exam.result', $intento));
 
     $intento->refresh();
     expect($intento->estado)->toBe('finalizado')

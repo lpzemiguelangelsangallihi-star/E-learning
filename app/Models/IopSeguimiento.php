@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class IopSeguimiento extends Model
 {
@@ -57,14 +58,16 @@ class IopSeguimiento extends Model
             'recomendacion_inicial_id'
         );
     }
-    public function transiciones(): \Illuminate\Database\Eloquent\Relations\HasMany
+
+    public function transiciones(): HasMany
     {
         return $this->hasMany(
             IopTransicion::class,
             'seguimiento_id'
         );
     }
-    public function ciclosRefuerzo(): \Illuminate\Database\Eloquent\Relations\HasMany
+
+    public function ciclosRefuerzo(): HasMany
     {
         return $this->hasMany(
             IopCicloRefuerzo::class,

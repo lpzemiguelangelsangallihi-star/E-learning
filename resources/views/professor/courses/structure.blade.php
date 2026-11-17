@@ -340,7 +340,7 @@
                                     </a>
 
                                     <a
-                                        href="{{ route('professor.iop.catalogo', ['leccionId' => $leccion->id]) }}"
+                                        href="{{ route('professor.iop.catalogo', $leccion) }}"
                                         class="mr-1 inline-flex items-center gap-2
                                                rounded-lg px-2.5 py-1.5 text-xs font-semibold
                                                text-[#2563EB] hover:bg-blue-50"

@@ -38,6 +38,7 @@ class StudentEvaluationService
             ->get()
             ->map(fn (Tarea $tarea) => [
                 'id' => $tarea->id,
+                'ulid' => $tarea->ulid,
                 'tipo' => 'tarea',
                 'titulo' => $tarea->titulo,
                 'curso' => $tarea->leccion?->modulo?->curso,
@@ -59,11 +60,11 @@ class StudentEvaluationService
             ->whereHas('leccion.modulo', $delCurso)
             ->get()
             ->filter(
-                fn (Examen $examen) =>
-                    $examen->intentos_realizados < $examen->intentos_permitidos
+                fn (Examen $examen) => $examen->intentos_realizados < $examen->intentos_permitidos
             )
             ->map(fn (Examen $examen) => [
                 'id' => $examen->id,
+                'ulid' => $examen->ulid,
                 'tipo' => 'examen',
                 'titulo' => $examen->titulo,
                 'curso' => $examen->leccion?->modulo?->curso,
@@ -95,6 +96,7 @@ class StudentEvaluationService
             ->get()
             ->map(fn (IntentoExamen $intento) => [
                 'id' => $intento->id,
+                'ulid' => $intento->ulid,
                 'tipo' => 'examen',
                 'titulo' => $intento->examen?->titulo ?? 'Examen eliminado',
                 'curso' => $intento->examen?->leccion?->modulo?->curso,
@@ -111,6 +113,7 @@ class StudentEvaluationService
             ->get()
             ->map(fn (Entrega $entrega) => [
                 'id' => $entrega->tarea_id,
+                'ulid' => $entrega->tarea?->ulid,
                 'tipo' => 'tarea',
                 'titulo' => $entrega->tarea?->titulo ?? 'Tarea eliminada',
                 'curso' => $entrega->tarea?->leccion?->modulo?->curso,

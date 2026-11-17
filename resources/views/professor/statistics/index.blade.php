@@ -28,7 +28,7 @@
                 @forelse ($studentsByCourse as $row)
                     <div>
                         <div class="mb-2 flex items-center justify-between gap-4">
-                            <a href="{{ route('professor.courses.students', $row->id) }}"
+                            <a href="{{ route('professor.courses.students', $row->ulid) }}"
                                class="truncate text-sm font-medium text-slate-700 hover:text-[#2563EB]">
                                 {{ $row->titulo }}
                             </a>

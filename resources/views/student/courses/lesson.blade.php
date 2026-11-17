@@ -123,7 +123,7 @@
                     </div>
                 
                     <a
-                        href="{{ route('iop.seguimiento', ['leccionId' => $leccion->id]) }}"
+                        href="{{ route('iop.seguimiento', $leccion) }}"
                         class="inline-flex items-center gap-2 rounded-lg
                                bg-[#2563EB] px-4 py-2.5 text-sm
                                font-semibold text-white hover:bg-[#1D4ED8]"

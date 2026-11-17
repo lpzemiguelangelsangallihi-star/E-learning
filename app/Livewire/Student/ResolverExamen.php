@@ -33,7 +33,7 @@ class ResolverExamen extends Component
         $intento = $this->intento();
 
         if ($intento->estado === 'finalizado') {
-            $this->redirect(route('student.evaluations.exam.result', $intento->id), navigate: false);
+            $this->redirect(route('student.evaluations.exam.result', $intento), navigate: false);
 
             return;
         }
@@ -121,7 +121,7 @@ class ResolverExamen extends Component
 
         $servicio->finalizar($intento);
 
-        return $this->redirect(route('student.evaluations.exam.result', $intento->id));
+        return $this->redirect(route('student.evaluations.exam.result', $intento));
     }
 
     public function render(ExamAttemptService $servicio)

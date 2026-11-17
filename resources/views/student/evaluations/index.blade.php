@@ -62,11 +62,11 @@
 
                         <div class="mt-5 space-y-2">
                             @if ($item['tipo'] === 'examen')
-                                <x-ui.button :href="route('student.evaluations.exam.show', $item['id'])" class="w-full" icon="fa-solid fa-play">
+                                <x-ui.button :href="route('student.evaluations.exam.show', $item['ulid'])" class="w-full" icon="fa-solid fa-play">
                                     Resolver examen
                                 </x-ui.button>
                             @else
-                                <x-ui.button :href="route('student.evaluations.task.show', $item['id'])" class="w-full" icon="fa-solid fa-paper-plane">
+                                <x-ui.button :href="route('student.evaluations.task.show', $item['ulid'])" class="w-full" icon="fa-solid fa-paper-plane">
                                     Ver y entregar
                                 </x-ui.button>
                             @endif

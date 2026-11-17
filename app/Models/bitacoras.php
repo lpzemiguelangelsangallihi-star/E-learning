@@ -9,8 +9,11 @@ class bitacoras extends Model
 {
     //
     protected $table = 'bitacoras';
+
     public const CREATED_AT = 'fecha';
+
     public const UPDATED_AT = null;
+
     protected $fillable = [
         'accion',
         'visible',
@@ -18,6 +21,7 @@ class bitacoras extends Model
         'usuario_nombre',
         'rol_id',
     ];
+
     protected function casts(): array
     {
         return [
@@ -25,6 +29,7 @@ class bitacoras extends Model
             'fecha' => 'datetime',
         ];
     }
+
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_id');
@@ -34,5 +39,4 @@ class bitacoras extends Model
     {
         return $this->belongsTo(Rol::class, 'rol_id');
     }
-
 }

@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
+use App\Support\ArchivosPrivados;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Video extends Model
 {
+    use HasPublicUlid;
+
     protected $table = 'videos';
 
     public const CREATED_AT = 'creado_en';
@@ -40,7 +44,7 @@ class Video extends Model
     public function getArchivoUrlAttribute(): ?string
     {
         return $this->es_local && $this->exists
-            ? route('files.video', $this->id)
+            ? ArchivosPrivados::url('files.video', 'video', $this)
             : null;
     }
 

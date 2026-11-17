@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
+use App\Models\Concerns\ResuelveBindingsEspanol;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Leccion extends Model
 {
+    use HasPublicUlid;
+    use ResuelveBindingsEspanol;
+
     protected $table = 'lecciones';
 
     public const CREATED_AT = 'creado_en';
@@ -26,6 +31,17 @@ class Leccion extends Model
     public function modulo(): BelongsTo
     {
         return $this->belongsTo(Modulo::class, 'modulo_id');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function relacionesDeRuta(): array
+    {
+        return [
+            'material' => 'materiales',
+            'examen' => 'examenes',
+        ];
     }
 
     public function videos(): HasMany

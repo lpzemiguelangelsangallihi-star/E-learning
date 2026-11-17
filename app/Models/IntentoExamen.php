@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class IntentoExamen extends Model
 {
+    use HasPublicUlid;
+
     protected $table = 'intentos_examen';
 
     public $timestamps = false;

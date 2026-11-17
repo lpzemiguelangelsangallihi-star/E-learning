@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
+use App\Models\Concerns\ResuelveBindingsEspanol;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Curso extends Model
 {
+    use HasPublicUlid;
+    use ResuelveBindingsEspanol;
+
     protected $table = 'cursos';
 
     public const CREATED_AT = 'creado_en';
@@ -91,6 +96,17 @@ class Curso extends Model
         return $this->hasMany(Modulo::class, 'curso_id')
             ->orderBy('orden')
             ->orderBy('id');
+    }
+
+    /**
+     * El parámetro de ruta `leccion` se resuelve contra `lecciones`, no
+     * contra el plural inglés `leccions`.
+     *
+     * @return array<string, string>
+     */
+    protected function relacionesDeRuta(): array
+    {
+        return ['leccion' => 'lecciones'];
     }
 
     /** Todos los temas del curso (a través de sus unidades). */

@@ -10,6 +10,7 @@ use App\Http\Controllers\CourseFileController;
 use App\Http\Controllers\NotificacionWebController;
 use App\Http\Controllers\Professor\CourseController as ProfessorCourseController;
 use App\Http\Controllers\Professor\DashboardController as ProfessorDashboardController;
+use App\Http\Controllers\Professor\ReporteIOPController;
 use App\Http\Controllers\Professor\StatisticsController as ProfessorStatisticsController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
@@ -18,9 +19,10 @@ use App\Http\Controllers\Student\GradeController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\RecommendationController;
+use App\Models\IopSeguimiento;
+use App\Models\Leccion;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Professor\ReporteIOPController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,7 +48,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
             ->whereNumber('notificacion')
             ->name('leida');
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -135,12 +136,12 @@ Route::middleware([
         )->name('courses.index');
 
         Route::patch(
-            '/cursos/{curso}/visibilidad',
+            '/cursos/{curso:ulid}/visibilidad',
             [AdminCourseController::class, 'toggleVisibility']
         )->name('courses.toggle-visibility');
 
         Route::delete(
-            '/cursos/{curso}',
+            '/cursos/{curso:ulid}',
             [AdminCourseController::class, 'destroy']
         )->name('courses.destroy');
 
@@ -208,52 +209,53 @@ Route::middleware([
         Route::get('/cursos', [ProfessorCourseController::class, 'index'])->name('courses.index');
         Route::get('/cursos/crear', [ProfessorCourseController::class, 'create'])->name('courses.create');
         Route::post('/cursos', [ProfessorCourseController::class, 'store'])->name('courses.store');
-        Route::get('/cursos/{curso}/editar', [ProfessorCourseController::class, 'edit'])->name('courses.edit');
-        Route::put('/cursos/{curso}', [ProfessorCourseController::class, 'update'])->name('courses.update');
-        Route::delete('/cursos/{curso}', [ProfessorCourseController::class, 'destroy'])->name('courses.destroy');
+        Route::get('/cursos/{curso:ulid}/editar', [ProfessorCourseController::class, 'edit'])->name('courses.edit');
+        Route::put('/cursos/{curso:ulid}', [ProfessorCourseController::class, 'update'])->name('courses.update');
+        Route::delete('/cursos/{curso:ulid}', [ProfessorCourseController::class, 'destroy'])->name('courses.destroy');
 
-        Route::patch('/cursos/{curso}/estado', [ProfessorCourseController::class, 'toggleStatus'])->name('courses.toggle-status');
-        Route::get('/cursos/{curso}/estudiantes', [ProfessorCourseController::class, 'students'])->name('courses.students');
+        Route::patch('/cursos/{curso:ulid}/estado', [ProfessorCourseController::class, 'toggleStatus'])->name('courses.toggle-status');
+        Route::get('/cursos/{curso:ulid}/estudiantes', [ProfessorCourseController::class, 'students'])->name('courses.students');
         Route::get('/estadisticas', [ProfessorStatisticsController::class, 'index'])->name('statistics.index');
 
         Route::get('/iop/refuerzos', fn () => view('professor.iop.refuerzos'))->name('iop.refuerzos');
-        Route::get('/iop/seguimientos',fn () => view('professor.iop.seguimientos'))->name('iop.seguimientos');
-        
-        Route::get('/iop/lecciones/{leccionId}/ejercicios',function (int $leccionId) {return view('professor.iop.catalogo', 
-        ['leccionId'=>$leccionId,]);})->whereNumber('leccionId')->name('iop.catalogo');
+        Route::get('/iop/seguimientos', fn () => view('professor.iop.seguimientos'))->name('iop.seguimientos');
 
+        Route::get('/iop/lecciones/{leccion:ulid}/ejercicios', function (Leccion $leccion) {
+            return view('professor.iop.catalogo', [
+                'leccionId' => $leccion->id,
+            ]);
+        })->name('iop.catalogo');
 
-Route::get(
-    '/iop/seguimientos/{seguimientoId}',
-    function (int $seguimientoId) {
-        $seguimiento = \App\Models\IopSeguimiento::query()
-            ->whereKey($seguimientoId)
-            ->whereHas(
-                'leccion.modulo.curso',
-                fn ($query) => $query->where(
-                    'profesor_id',
-                    \Illuminate\Support\Facades\Auth::id()
-                )
-            )
-            ->whereNotNull('intento_diagnostico_id')
-            ->with([
-                'estudiante',
-                'leccion.modulo.curso',
-                'transiciones',
-                'ciclosRefuerzo.recomendacion.asignacionRefuerzo.ejercicio',
-            ])
-            ->firstOrFail();
+        Route::get(
+            '/iop/seguimientos/{seguimientoId}',
+            function (int $seguimientoId) {
+                $seguimiento = IopSeguimiento::query()
+                    ->whereKey($seguimientoId)
+                    ->whereHas(
+                        'leccion.modulo.curso',
+                        fn ($query) => $query->where(
+                            'profesor_id',
+                            Auth::id()
+                        )
+                    )
+                    ->whereNotNull('intento_diagnostico_id')
+                    ->with([
+                        'estudiante',
+                        'leccion.modulo.curso',
+                        'transiciones',
+                        'ciclosRefuerzo.recomendacion.asignacionRefuerzo.ejercicio',
+                    ])
+                    ->firstOrFail();
 
-        return view('professor.iop.detalle-seguimiento', [
-            'seguimiento' => $seguimiento,
-        ]);
-    }
-)
-    ->whereNumber('seguimientoId')
-    ->name('iop.seguimientos.detalle');
+                return view('professor.iop.detalle-seguimiento', [
+                    'seguimiento' => $seguimiento,
+                ]);
+            }
+        )
+            ->whereNumber('seguimientoId')
+            ->name('iop.seguimientos.detalle');
 
-
-        Route::get('/iop/reportes/exportar',[ReporteIOPController::class, 'exportar'])->name('iop.reportes.exportar');
+        Route::get('/iop/reportes/exportar', [ReporteIOPController::class, 'exportar'])->name('iop.reportes.exportar');
 
     });
 
@@ -346,17 +348,17 @@ require __DIR__.'/academico.php';
 | con acceso al curso correspondiente.
 |
 */
-Route::middleware('auth')
+Route::middleware(['auth', 'signed', 'throttle:archivos'])
     ->prefix('archivos')
     ->name('files.')
     ->group(function () {
-        Route::get('/materiales/{material}', [CourseFileController::class, 'material'])
+        Route::get('/materiales/{material:ulid}', [CourseFileController::class, 'material'])
             ->name('material');
 
-        Route::get('/videos/{video}', [CourseFileController::class, 'video'])
+        Route::get('/videos/{video:ulid}', [CourseFileController::class, 'video'])
             ->name('video');
 
-        Route::get('/tareas/{tarea}', [CourseFileController::class, 'tarea'])
+        Route::get('/tareas/{tarea:ulid}', [CourseFileController::class, 'tarea'])
             ->name('tarea');
     });
 
@@ -373,12 +375,11 @@ Route::middleware([
     'role:estudiante',
 ])
     ->get(
-        '/iop/lecciones/{leccionId}/seguimiento',
-        function (int $leccionId) {
+        '/iop/lecciones/{leccion:ulid}/seguimiento',
+        function (Leccion $leccion) {
             return view('iop.seguimiento', [
-                'leccionId' => $leccionId,
+                'leccionId' => $leccion->id,
             ]);
         }
     )
-    ->whereNumber('leccionId')
     ->name('iop.seguimiento');

@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
+use App\Support\ArchivosPrivados;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tarea extends Model
 {
+    use HasPublicUlid;
+
     protected $table = 'tareas';
 
     public const CREATED_AT = 'creado_en';
@@ -57,7 +61,7 @@ class Tarea extends Model
     public function getArchivoUrlAttribute(): ?string
     {
         return $this->archivo && $this->exists
-            ? route('files.tarea', $this->id)
+            ? ArchivosPrivados::url('files.tarea', 'tarea', $this)
             : null;
     }
 }

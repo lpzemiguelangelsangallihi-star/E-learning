@@ -14,6 +14,7 @@ use Database\Seeders\UsersSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +65,15 @@ function seguridadLeccion(Curso $curso, array $atributos = []): Leccion
         'orden' => 1,
         'estado' => 'publicado',
     ], $atributos));
+}
+
+function seguridadUrlFirmada(string $ruta, string $parametro, $modelo): string
+{
+    return URL::temporarySignedRoute(
+        $ruta,
+        now()->addMinutes(30),
+        [$parametro => $modelo]
+    );
 }
 
 beforeEach(function () {
@@ -162,18 +172,22 @@ it('solo entrega un material al profesor dueño o a estudiantes inscritos', func
 
     $this->actingAs($profesor)
         ->get(route('files.material', $material))
+        ->assertForbidden();
+
+    $this->actingAs($profesor)
+        ->get(seguridadUrlFirmada('files.material', 'material', $material))
         ->assertOk();
 
     $this->actingAs($estudiante)
-        ->get(route('files.material', $material))
+        ->get(seguridadUrlFirmada('files.material', 'material', $material))
         ->assertOk();
 
     $this->actingAs($ajeno)
-        ->get(route('files.material', $material))
+        ->get(seguridadUrlFirmada('files.material', 'material', $material))
         ->assertForbidden();
 
     $this->actingAs($otroProfesor)
-        ->get(route('files.material', $material))
+        ->get(seguridadUrlFirmada('files.material', 'material', $material))
         ->assertForbidden();
 });
 
@@ -200,15 +214,15 @@ it('no expone videos locales mediante el enlace público de storage', function (
     ]);
 
     expect($video->archivo_url)
-        ->toContain('/archivos/videos/'.$video->id)
+        ->toContain('/archivos/videos/'.$video->ulid)
         ->not->toContain('/storage/');
 
     $this->actingAs($estudiante)
-        ->get(route('files.video', $video))
+        ->get(seguridadUrlFirmada('files.video', 'video', $video))
         ->assertOk();
 
     $this->actingAs(seguridadUsuario('estudiante'))
-        ->get(route('files.video', $video))
+        ->get(seguridadUrlFirmada('files.video', 'video', $video))
         ->assertForbidden();
 });
 
@@ -237,15 +251,15 @@ it('solo entrega el adjunto de una tarea a quien puede verla o administrarla', f
     ]);
 
     $this->actingAs($estudiante)
-        ->get(route('files.tarea', $tarea))
+        ->get(seguridadUrlFirmada('files.tarea', 'tarea', $tarea))
         ->assertOk();
 
     $this->actingAs($profesor)
-        ->get(route('files.tarea', $tarea))
+        ->get(seguridadUrlFirmada('files.tarea', 'tarea', $tarea))
         ->assertOk();
 
     $this->actingAs(seguridadUsuario('estudiante'))
-        ->get(route('files.tarea', $tarea))
+        ->get(seguridadUrlFirmada('files.tarea', 'tarea', $tarea))
         ->assertForbidden();
 });
 

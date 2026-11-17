@@ -49,8 +49,8 @@ class StatisticsController extends Controller
                     ->where('i.estado', '=', 'activo');
             })
             ->where('c.profesor_id', $profesorId)
-            ->select('c.id', 'c.titulo', DB::raw('COUNT(i.id) as total'))
-            ->groupBy('c.id', 'c.titulo')
+            ->select('c.id', 'c.ulid', 'c.titulo', DB::raw('COUNT(i.id) as total'))
+            ->groupBy('c.id', 'c.ulid', 'c.titulo')
             ->orderByDesc('total')
             ->limit(8)
             ->get();
@@ -72,7 +72,6 @@ class StatisticsController extends Controller
             ->groupBy('m.id', 'm.nombre')
             ->orderByDesc('total')
             ->get();
-
 
         return view(
             'professor.statistics.index',

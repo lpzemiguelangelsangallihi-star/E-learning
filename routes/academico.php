@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Route;
 
 /*
 | PROFESOR
+|
+| Las rutas anidadas activan scopeBindings(): Laravel comprueba que el
+| módulo pertenezca al curso y que el tema pertenezca al módulo antes de
+| entregar el modelo al controlador. Un cruce de identificadores da 404.
 */
 Route::middleware([
     'auth:sanctum',
@@ -18,61 +22,62 @@ Route::middleware([
 ])
     ->prefix('profesor')
     ->name('professor.')
+    ->scopeBindings()
     ->group(function () {
 
         // Estructura del curso y código de clase
-        Route::get('/cursos/{curso}/contenido', [CourseContentController::class, 'show'])
+        Route::get('/cursos/{curso:ulid}/contenido', [CourseContentController::class, 'show'])
             ->name('courses.structure');
 
-        Route::post('/cursos/{curso}/codigo', [CourseContentController::class, 'regenerateCode'])
+        Route::post('/cursos/{curso:ulid}/codigo', [CourseContentController::class, 'regenerateCode'])
             ->name('courses.regenerate-code');
 
         // Unidades
-        Route::post('/cursos/{curso}/modulos', [ModuleController::class, 'store'])
+        Route::post('/cursos/{curso:ulid}/modulos', [ModuleController::class, 'store'])
             ->name('modules.store');
 
-        Route::put('/cursos/{curso}/modulos/{modulo}', [ModuleController::class, 'update'])
+        Route::put('/cursos/{curso:ulid}/modulos/{modulo:ulid}', [ModuleController::class, 'update'])
             ->name('modules.update');
 
-        Route::delete('/cursos/{curso}/modulos/{modulo}', [ModuleController::class, 'destroy'])
+        Route::delete('/cursos/{curso:ulid}/modulos/{modulo:ulid}', [ModuleController::class, 'destroy'])
             ->name('modules.destroy');
 
-        Route::post('/cursos/{curso}/modulos/{modulo}/mover', [ModuleController::class, 'move'])
+        Route::post('/cursos/{curso:ulid}/modulos/{modulo:ulid}/mover', [ModuleController::class, 'move'])
             ->name('modules.move');
 
         // Temas
-        Route::get('/cursos/{curso}/modulos/{modulo}/lecciones/crear', [LessonController::class, 'create'])
+        Route::get('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/crear', [LessonController::class, 'create'])
             ->name('lessons.create');
 
-        Route::post('/cursos/{curso}/modulos/{modulo}/lecciones', [LessonController::class, 'store'])
+        Route::post('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones', [LessonController::class, 'store'])
             ->name('lessons.store');
 
-        Route::get('/cursos/{curso}/modulos/{modulo}/lecciones/{leccion}/editar', [LessonController::class, 'edit'])
+        Route::get('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/{leccion:ulid}/editar', [LessonController::class, 'edit'])
             ->name('lessons.edit');
 
-        Route::put('/cursos/{curso}/modulos/{modulo}/lecciones/{leccion}', [LessonController::class, 'update'])
+        Route::put('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/{leccion:ulid}', [LessonController::class, 'update'])
             ->name('lessons.update');
 
-        Route::delete('/cursos/{curso}/modulos/{modulo}/lecciones/{leccion}', [LessonController::class, 'destroy'])
+        Route::delete('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/{leccion:ulid}', [LessonController::class, 'destroy'])
             ->name('lessons.destroy');
 
-        Route::post('/cursos/{curso}/modulos/{modulo}/lecciones/{leccion}/mover', [LessonController::class, 'move'])
+        Route::post('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/{leccion:ulid}/mover', [LessonController::class, 'move'])
             ->name('lessons.move');
 
-        Route::patch('/cursos/{curso}/modulos/{modulo}/lecciones/{leccion}/estado', [LessonController::class, 'toggleStatus'])
+        Route::patch('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/{leccion:ulid}/estado', [LessonController::class, 'toggleStatus'])
             ->name('lessons.toggle-status');
 
         // Materiales y videos de un tema
-        Route::get('/cursos/{curso}/modulos/{modulo}/lecciones/{leccion}/materiales', [MaterialController::class, 'index'])
+        Route::get('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/{leccion:ulid}/materiales', [MaterialController::class, 'index'])
             ->name('materials.index');
 
-        Route::post('/cursos/{curso}/modulos/{modulo}/lecciones/{leccion}/materiales', [MaterialController::class, 'store'])
+        Route::post('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/{leccion:ulid}/materiales', [MaterialController::class, 'store'])
             ->name('materials.store');
 
-        Route::delete('/cursos/{curso}/modulos/{modulo}/lecciones/{leccion}/materiales/{material}', [MaterialController::class, 'destroyMaterial'])
+        Route::delete('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/{leccion:ulid}/materiales/{material:ulid}', [MaterialController::class, 'destroyMaterial'])
             ->name('materials.destroy');
 
-        Route::delete('/cursos/{curso}/modulos/{modulo}/lecciones/{leccion}/videos/{video}', [MaterialController::class, 'destroyVideo'])
+        Route::delete('/cursos/{curso:ulid}/modulos/{modulo:ulid}/lecciones/{leccion:ulid}/videos/{video:ulid}', [MaterialController::class, 'destroyVideo'])
             ->name('videos.destroy');
     });
 
@@ -90,6 +95,7 @@ Route::middleware([
 ])
     ->prefix('estudiante')
     ->name('student.')
+    ->scopeBindings()
     ->group(function () {
 
         // Compatibilidad con el formulario anterior.
@@ -99,17 +105,17 @@ Route::middleware([
         )->name('courses.join-legacy');
 
         Route::get(
-            '/cursos/{curso}',
+            '/cursos/{curso:ulid}',
             [StudentCourseController::class, 'show']
         )->name('courses.show');
 
         Route::post(
-            '/cursos/{curso}/temas/{leccion}/completar',
+            '/cursos/{curso:ulid}/temas/{leccion:ulid}/completar',
             [StudentCourseController::class, 'completeLesson']
         )->name('lessons.complete');
 
         Route::get(
-            '/cursos/{curso}/temas/{leccion}',
+            '/cursos/{curso:ulid}/temas/{leccion:ulid}',
             [StudentCourseController::class, 'lesson']
         )->name('lessons.show');
 

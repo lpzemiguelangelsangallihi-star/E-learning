@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUlid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Examen extends Model
 {
+    use HasPublicUlid;
+
     public const IOP_NINGUNO = 'ninguno';
 
     public const IOP_DIAGNOSTICO = 'diagnostico';

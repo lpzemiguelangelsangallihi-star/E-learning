@@ -81,7 +81,7 @@ class ProgresoCurso extends Model
         $progreso->lecciones_completadas = $hechas;
         $progreso->estado = $estado;
 
-        if ($hechas > 0 && !$progreso->fecha_inicio) {
+        if ($hechas > 0 && ! $progreso->fecha_inicio) {
             $progreso->fecha_inicio = now();
         }
 
