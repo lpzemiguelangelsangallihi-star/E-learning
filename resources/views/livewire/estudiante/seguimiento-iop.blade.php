@@ -52,15 +52,21 @@
                     Estado actual
                 </p>
                 <h2 class="mt-2 text-3xl font-bold text-blue-700">
-                    {{ $seguimiento->estado_actual }}
+                    {{ \App\Support\EstadosIOP::nombre(
+    $seguimiento->estado_actual
+) }}
                 </h2>
                 <p class="mt-2 text-sm">
                     Última calificación:
-                    {{ $seguimiento->ultima_calificacion }}
+                    {{ \App\Support\EstadosIOP::nombre(
+    $seguimiento->estado_actual
+) }}
                 </p>
                 <p class="text-sm">
                     Ciclo actual:
-                    {{ $seguimiento->ciclo_actual }}
+                    {{ \App\Support\EstadosIOP::nombre(
+    $seguimiento->estado_actual
+) }}
                 </p>
             </div>
             {{-- EXPLICACIÓN DE LOS ESTADOS MARKOV --}}
