@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CourseFileController;
+use App\Http\Controllers\NotificacionWebController;
 use App\Http\Controllers\Professor\CourseController as ProfessorCourseController;
 use App\Http\Controllers\Professor\DashboardController as ProfessorDashboardController;
 use App\Http\Controllers\Professor\StatisticsController as ProfessorStatisticsController;
@@ -30,6 +31,22 @@ use App\Http\Controllers\Professor\ReporteIOPController;
 Route::get('/', function () {
     return view('welcome');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Notificaciones del usuario autenticado
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'role:estudiante'])
+    ->prefix('notificaciones')
+    ->name('notificaciones.')
+    ->group(function () {
+        Route::get('/', [NotificacionWebController::class, 'index'])->name('index');
+        Route::patch('/{notificacion}/leida', [NotificacionWebController::class, 'marcarLeida'])
+            ->whereNumber('notificacion')
+            ->name('leida');
+    });
+
 
 /*
 |--------------------------------------------------------------------------

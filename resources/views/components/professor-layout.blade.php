@@ -387,8 +387,7 @@
                         flex items-center gap-3
                     "
                 >
-
-                    <div
+<div
                         class="
                             hidden
                             text-right

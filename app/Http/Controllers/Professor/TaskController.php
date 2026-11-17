@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use App\Models\Entrega;
 use App\Models\Leccion;
+use App\Models\Inscripcion;
+use App\Models\Notificacion;
 use App\Models\Tarea;
 use App\Services\BitacoraService;
 use App\Services\CourseFileService;
@@ -183,7 +185,35 @@ class TaskController extends Controller
             return back()->with('error', 'Una tarea con entregas no puede volver a borrador. Ciérrala en su lugar.');
         }
 
+        $estadoAnterior = $tarea->estado;
         $tarea->update(['estado' => $estado]);
+
+        // Al publicar por primera vez, avisar a los estudiantes inscritos activos.
+        if ($estado === 'publicada' && $estadoAnterior !== 'publicada') {
+            $cursoId = $tarea->leccion?->modulo?->curso?->id;
+
+            if ($cursoId) {
+                $estudiantes = Inscripcion::query()
+                    ->where('curso_id', $cursoId)
+                    ->where('estado', 'activo')
+                    ->pluck('estudiante_id');
+
+                foreach ($estudiantes as $estudianteId) {
+                    Notificacion::firstOrCreate(
+                        [
+                            'usuario_id' => $estudianteId,
+                            'tarea_id' => $tarea->id,
+                            'tipo' => 'tarea_publicada',
+                        ],
+                        [
+                            'titulo' => 'Nueva tarea pendiente',
+                            'mensaje' => "Tu profesor publicó la tarea «{$tarea->titulo}». Revisa las instrucciones y la fecha de entrega.",
+                            'leida' => false,
+                        ]
+                    );
+                }
+            }
+        }
 
         BitacoraService::registrar("Cambió la tarea «{$tarea->titulo}» a estado {$estado}");
 
@@ -255,9 +285,11 @@ class TaskController extends Controller
             'leccion_id' => [$creando ? 'required' : 'sometimes', 'integer'],
             'titulo' => ['required', 'string', 'min:3', 'max:200'],
             'instrucciones' => ['nullable', 'string', 'max:5000'],
-            'fecha_limite' => ['nullable', 'date'],
+            'fecha_limite' => ['nullable', 'date', 'after:now'],
             'puntaje_maximo' => ['required', 'numeric', 'min:1', 'max:999'],
             'archivo' => ['nullable', 'file', 'max:10240', 'mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,txt,zip,jpg,jpeg,png'],
+        ], [
+            'fecha_limite.after' => 'La fecha límite debe ser posterior a la fecha y hora actual.',
         ]);
     }
 

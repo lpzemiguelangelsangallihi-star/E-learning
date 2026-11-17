@@ -19,6 +19,7 @@ class Notificacion extends Model
         'mensaje',
         'tipo',
         'leida',
+        'tarea_id',
     ];
 
     protected function casts(): array
@@ -26,6 +27,11 @@ class Notificacion extends Model
         return [
             'leida' => 'boolean',
         ];
+    }
+
+    public function tarea(): BelongsTo
+    {
+        return $this->belongsTo(Tarea::class, 'tarea_id');
     }
 
     public function usuario(): BelongsTo

@@ -5,6 +5,10 @@
 
 @php
     $user = auth()->user();
+    $notificacionesPendientes = \App\Models\Notificacion::query()
+        ->where('usuario_id', $user->id)
+        ->where('leida', false)
+        ->count();
 
     $nav = [
         ['Dashboard', 'student.dashboard', 'student.dashboard', 'fa-house'],
@@ -162,6 +166,20 @@
                 </div>
 
                 <div class="flex items-center gap-2">
+                    <a
+                        href="{{ route('notificaciones.index') }}"
+                        aria-label="Ver notificaciones"
+                        title="Notificaciones"
+                        class="relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                    >
+                        <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                        @if ($notificacionesPendientes > 0)
+                            <span class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                                {{ $notificacionesPendientes > 99 ? '99+' : $notificacionesPendientes }}
+                            </span>
+                        @endif
+                    </a>
+
                     <div class="hidden text-right sm:block">
                         <p class="text-sm font-semibold text-slate-700">
                             {{ $user->nombre }}

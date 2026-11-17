@@ -543,34 +543,7 @@
                         gap-2
                     "
                 >
-
-                    {{-- Notificaciones --}}
-                    <button
-                        type="button"
-                        class="
-                            relative
-                            flex h-10 w-10
-                            items-center
-                            justify-center
-                            rounded-lg
-                            text-slate-500
-                            transition
-                            hover:bg-slate-100
-                            hover:text-slate-700
-                        "
-                    >
-
-                        <i
-                            class="
-                                fa-regular
-                                fa-bell
-                            "
-                        ></i>
-
-                    </button>
-
-
-                    {{-- Usuario --}}
+{{-- Usuario --}}
                     <div
                         class="
                             hidden
