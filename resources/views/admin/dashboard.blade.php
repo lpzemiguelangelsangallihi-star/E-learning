@@ -37,7 +37,7 @@
     </x-dashboard.hero>
 
     {{-- Estadísticas --}}
-    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
 
         <x-ui.stat-card
             title="Usuarios"
@@ -76,6 +76,10 @@
             icon="fa-solid fa-file-pen"
             type="warning"
         />
+
+        <x-ui.stat-card title="Inscripciones activas" :value="$stats['activeEnrollments']" icon="fa-solid fa-clipboard-list" type="success" />
+        <x-ui.stat-card title="Progreso promedio" :value="$stats['averageProgress'] . '%'" icon="fa-solid fa-chart-line" type="success" />
+        <x-ui.stat-card title="Eventos registrados" :value="$stats['activityEvents']" icon="fa-solid fa-clock-rotate-left" />
 
     </section>
 

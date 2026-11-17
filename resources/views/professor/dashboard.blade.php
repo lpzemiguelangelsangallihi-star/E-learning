@@ -38,7 +38,7 @@
         </x-slot:actions>
     </x-dashboard.hero>
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 
         <x-ui.stat-card
             title="Mis cursos"
@@ -65,6 +65,10 @@
             icon="fa-solid fa-file-circle-check"
             type="warning"
         />
+
+        <x-ui.stat-card title="Progreso promedio" :value="$stats['averageProgress'] . '%'" icon="fa-solid fa-chart-line" type="success" />
+
+        <x-ui.stat-card title="Estudiantes que completaron" :value="$stats['completedStudents']" icon="fa-solid fa-circle-check" type="success" />
 
     </div>
 

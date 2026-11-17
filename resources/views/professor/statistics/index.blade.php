@@ -1,109 +1,68 @@
-<x-professor-layout
-    title="Estadísticas"
-    description="Resumen de la actividad de tus cursos y estudiantes."
->
-
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <x-ui.stat-card title="Mis cursos" :value="$stats['courses']" icon="fa-solid fa-book-open" />
-        <x-ui.stat-card title="Publicados" :value="$stats['published']" icon="fa-solid fa-eye" type="success" />
-        <x-ui.stat-card title="Estudiantes activos" :value="$stats['students']" icon="fa-solid fa-user-graduate" type="success" description="Estudiantes únicos en tus cursos" />
-        <x-ui.stat-card title="Inscripciones" :value="$stats['enrollments']" icon="fa-solid fa-clipboard-list" />
-        <x-ui.stat-card title="Finalizadas" :value="$stats['finished']" icon="fa-solid fa-flag-checkered" type="warning" />
-        <x-ui.stat-card title="Evaluaciones" :value="$stats['evaluations']" icon="fa-solid fa-file-circle-check" />
-    </div>
-
-
-    <div class="mt-6 grid gap-6 xl:grid-cols-2">
-
-        {{-- Estudiantes por curso --}}
-        <x-ui.card>
-            <div class="mb-6">
-                <h2 class="text-base font-bold text-slate-800">Estudiantes por curso</h2>
-                <p class="mt-1 text-sm text-slate-500">Estudiantes activos en tus cursos con más inscritos.</p>
-            </div>
-
-            @php $maxStudents = max($studentsByCourse->max('total') ?? 0, 1); @endphp
-
-            <div class="space-y-5">
-                @forelse ($studentsByCourse as $row)
-                    <div>
-                        <div class="mb-2 flex items-center justify-between gap-4">
-                            <a href="{{ route('professor.courses.students', $row->ulid) }}"
-                               class="truncate text-sm font-medium text-slate-700 hover:text-[#2563EB]">
-                                {{ $row->titulo }}
-                            </a>
-                            <span class="text-sm font-semibold text-slate-800">{{ $row->total }}</span>
-                        </div>
-                        <div class="h-2.5 overflow-hidden rounded-full bg-slate-100">
-                            <div class="h-full rounded-full bg-[#2563EB]"
-                                 style="width: {{ round(($row->total / $maxStudents) * 100) }}%"></div>
-                        </div>
-                    </div>
-                @empty
-                    <p class="text-sm text-slate-500">Aún no tienes cursos.</p>
-                @endforelse
-            </div>
-        </x-ui.card>
-
-
-        {{-- Cursos por materia --}}
-        <x-ui.card>
-            <div class="mb-6">
-                <h2 class="text-base font-bold text-slate-800">Cursos por materia</h2>
-                <p class="mt-1 text-sm text-slate-500">Distribución de tus cursos entre materias.</p>
-            </div>
-
-            @php $totalCourses = max($stats['courses'], 1); @endphp
-
-            <div class="space-y-5">
-                @forelse ($coursesBySubject as $row)
-                    @php $pct = round(($row->total / $totalCourses) * 100); @endphp
-                    <div>
-                        <div class="mb-2 flex items-center justify-between gap-4">
-                            <span class="text-sm font-medium text-slate-700">{{ $row->nombre }}</span>
-                            <span class="text-sm font-semibold text-slate-800">{{ $row->total }}</span>
-                        </div>
-                        <div class="h-2.5 overflow-hidden rounded-full bg-slate-100">
-                            <div class="h-full rounded-full bg-[#2563EB]" style="width: {{ $pct }}%"></div>
-                        </div>
-                        <p class="mt-1.5 text-right text-xs text-slate-400">{{ $pct }}%</p>
-                    </div>
-                @empty
-                    <p class="text-sm text-slate-500">Sin datos todavía.</p>
-                @endforelse
-            </div>
-        </x-ui.card>
-    </div>
-
-
-    {{-- Estado y tipo --}}
-    <x-ui.card class="mt-6">
-        <div class="mb-6">
-            <h2 class="text-base font-bold text-slate-800">Estado de los cursos</h2>
-            <p class="mt-1 text-sm text-slate-500">Visibilidad actual de tus cursos.</p>
-        </div>
-
-        @php
-            $cards = [
-                ['Publicados', $coursesByStatus['publicado'] ?? 0, 'fa-solid fa-eye', 'bg-green-50 text-green-700 border-green-200'],
-                ['Borradores', $coursesByStatus['borrador'] ?? 0, 'fa-solid fa-pen-ruler', 'bg-yellow-50 text-yellow-700 border-yellow-200'],
-                ['Ocultos', $coursesByStatus['oculto'] ?? 0, 'fa-solid fa-eye-slash', 'bg-red-50 text-red-700 border-red-200'],
-            ];
-        @endphp
-
-        <div class="grid gap-4 sm:grid-cols-3">
-            @foreach ($cards as [$label, $total, $icon, $classes])
-                <div class="rounded-xl border p-5 {{ $classes }}">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <p class="text-sm font-semibold">{{ $label }}</p>
-                            <p class="mt-2 text-3xl font-bold">{{ $total }}</p>
-                        </div>
-                        <i class="{{ $icon }} text-2xl"></i>
-                    </div>
-                </div>
-            @endforeach
-        </div>
+<x-professor-layout title="Estadísticas" description="Seguimiento de tus cursos, estudiantes, progreso y resultados académicos.">
+    <x-ui.card class="mb-6">
+        <form method="GET" action="{{ route('professor.statistics.index') }}" class="grid gap-4 sm:grid-cols-4 sm:items-end">
+            <div class="sm:col-span-2"><label for="curso_id" class="mb-1 block text-sm font-medium text-slate-700">Curso</label><select id="curso_id" name="curso_id" class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"><option value="">Todos mis cursos</option>@foreach ($courses as $course)<option value="{{ $course->id }}" @selected((string) $cursoId === (string) $course->id)>{{ $course->titulo }}</option>@endforeach</select></div>
+            <div><label for="desde" class="mb-1 block text-sm font-medium text-slate-700">Desde</label><input id="desde" name="desde" type="date" value="{{ $desde }}" class="w-full rounded-lg border-slate-300 text-sm shadow-sm"></div>
+            <div><label for="hasta" class="mb-1 block text-sm font-medium text-slate-700">Hasta</label><input id="hasta" name="hasta" type="date" value="{{ $hasta }}" min="{{ $desde }}" class="w-full rounded-lg border-slate-300 text-sm shadow-sm"></div>
+            <div class="flex gap-2 sm:col-span-4"><x-ui.button type="submit" icon="fa-solid fa-filter">Aplicar filtros</x-ui.button><a href="{{ route('professor.statistics.index') }}" class="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Limpiar</a></div>
+        </form>
+        <p class="mt-3 text-xs text-slate-500">Los filtros de fecha se aplican a inscripciones, actividad y resultados de evaluaciones. El progreso representa el estado actual registrado.</p>
     </x-ui.card>
 
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <x-ui.stat-card title="Mis cursos" :value="$stats['courses']" icon="fa-solid fa-book-open" />
+        <x-ui.stat-card title="Cursos publicados" :value="$stats['published']" icon="fa-solid fa-eye" type="success" />
+        <x-ui.stat-card title="Estudiantes activos" :value="$stats['students']" icon="fa-solid fa-user-graduate" />
+        <x-ui.stat-card title="Inscripciones" :value="$stats['enrollments']" icon="fa-solid fa-clipboard-list" />
+        <x-ui.stat-card title="Evaluaciones" :value="$stats['evaluations']" icon="fa-solid fa-file-circle-check" />
+        <x-ui.stat-card title="Progreso promedio" :value="$stats['averageProgress'] . '%'" icon="fa-solid fa-chart-line" type="success" />
+        <x-ui.stat-card title="Estudiantes completaron" :value="$stats['completedStudents']" icon="fa-solid fa-circle-check" type="success" />
+        <x-ui.stat-card title="En progreso" :value="$stats['inProgressStudents']" icon="fa-solid fa-spinner" type="warning" />
+    </div>
+
+    <div class="mt-6 grid gap-6 xl:grid-cols-2">
+        <x-ui.card>
+            <h2 class="text-base font-bold text-slate-800">Progreso y estudiantes por curso</h2><p class="mb-5 mt-1 text-sm text-slate-500">Inscripciones activas y avance académico actual.</p>
+            <div class="space-y-5">
+                @forelse ($studentsByCourse as $course)
+                    <div><div class="mb-1 flex items-center justify-between gap-3 text-sm"><span class="truncate font-medium text-slate-700">{{ $course->titulo }}</span><span class="shrink-0 font-semibold text-slate-800">{{ $course->progreso }}%</span></div><div class="h-2.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-emerald-500" style="width: {{ min(100, max(0, $course->progreso)) }}%"></div></div><p class="mt-1 text-xs text-slate-500">{{ $course->total }} estudiantes activos · {{ $course->completados }} completaron</p></div>
+                @empty
+                    <p class="text-sm text-slate-500">No hay cursos para mostrar.</p>
+                @endforelse
+            </div>
+        </x-ui.card>
+        <x-ui.card>
+            <h2 class="text-base font-bold text-slate-800">Resultados de evaluaciones por curso</h2><p class="mb-5 mt-1 text-sm text-slate-500">Promedio porcentual calculado sobre intentos finalizados.</p>
+            <div class="space-y-4">
+                @forelse ($results as $result)
+                    <div><div class="mb-1 flex justify-between gap-3 text-sm"><span class="font-medium text-slate-700">{{ $result->titulo }}</span><span class="font-semibold text-slate-800">{{ $result->promedio !== null ? $result->promedio . '%' : 'Sin notas' }}</span></div><div class="h-2.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-indigo-500" style="width: {{ min(100, max(0, (float) $result->promedio)) }}%"></div></div><p class="mt-1 text-xs text-slate-500">{{ $result->intentos }} intentos finalizados</p></div>
+                @empty
+                    <p class="text-sm text-slate-500">Todavía no hay intentos finalizados para los filtros seleccionados.</p>
+                @endforelse
+            </div>
+            <a href="{{ route('professor.reports.index') }}" class="mt-5 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900">Ver reportes detallados <i class="fa-solid fa-arrow-right ml-2" aria-hidden="true"></i></a>
+        </x-ui.card>
+    </div>
+
+    <div class="mt-6 grid gap-6 xl:grid-cols-2">
+        <x-ui.card>
+            <h2 class="text-base font-bold text-slate-800">Cursos por estado</h2><div class="mt-4 space-y-3">
+                @forelse ($coursesByStatus as $status => $total)
+                    <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3"><span class="text-sm font-medium text-slate-700">{{ ucfirst(str_replace('_', ' ', $status)) }}</span><span class="font-bold text-slate-900">{{ $total }}</span></div>
+                @empty
+                    <p class="text-sm text-slate-500">No hay estados disponibles.</p>
+                @endforelse
+            </div>
+        </x-ui.card>
+        <x-ui.card>
+            <h2 class="text-base font-bold text-slate-800">Actividad reciente de estudiantes inscritos</h2><p class="mb-4 mt-1 text-sm text-slate-500">Acciones visibles de usuarios inscritos en tus cursos, según la bitácora.</p>
+            <div class="divide-y divide-slate-100">
+                @forelse ($activity as $event)
+                    <div class="py-3 first:pt-0"><p class="text-sm font-medium text-slate-800">{{ $event->accion }}</p><div class="mt-1 flex justify-between gap-2 text-xs text-slate-500"><span>{{ trim($event->nombre . ' ' . ($event->apellido_paterno ?? '')) }}</span><time>{{ \Illuminate\Support\Carbon::parse($event->fecha)->format('d/m/Y H:i') }}</time></div></div>
+                @empty
+                    <p class="py-3 text-sm text-slate-500">No hay actividad disponible para los filtros seleccionados.</p>
+                @endforelse
+            </div>
+        </x-ui.card>
+    </div>
 </x-professor-layout>
