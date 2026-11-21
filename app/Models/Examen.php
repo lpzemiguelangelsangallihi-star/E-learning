@@ -20,10 +20,10 @@ class Examen extends Model
     public const IOP_ORDINARIA = 'ordinaria';
 
     public const TIPOS_IOP = [
-        self::IOP_NINGUNO => 'Sin IOP',
-        self::IOP_DIAGNOSTICO => 'Diagnóstico (inicia el seguimiento IOP)',
-        self::IOP_REFUERZO => 'Evaluación de refuerzo (registra avance IOP)',
-        self::IOP_ORDINARIA => 'Evaluación ordinaria (no afecta a IOP)',
+        //self::IOP_NINGUNO => 'Sin IOP',
+        self::IOP_DIAGNOSTICO => 'Diagnóstico',
+        self::IOP_REFUERZO => 'Evaluación de refuerzo',
+        self::IOP_ORDINARIA => 'Evaluación ordinaria ',
     ];
 
     protected $table = 'examenes';

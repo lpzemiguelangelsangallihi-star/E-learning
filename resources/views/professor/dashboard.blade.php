@@ -66,7 +66,7 @@
             type="warning"
         />
 
-        <x-ui.stat-card title="Progreso promedio" :value="$stats['averageProgress'] . '%'" icon="fa-solid fa-chart-line" type="success" />
+        {{-- <x-ui.stat-card title="Progreso promedio" :value="$stats['averageProgress'] . '%'" icon="fa-solid fa-chart-line" type="success" /> --}}
 
         <x-ui.stat-card title="Estudiantes que completaron" :value="$stats['completedStudents']" icon="fa-solid fa-circle-check" type="success" />
 

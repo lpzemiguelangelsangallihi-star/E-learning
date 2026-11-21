@@ -35,4 +35,23 @@ return [
         ],
     ],
 
+    'maximin' => [
+        'url' => env(
+            'MAXIMIN_SERVICE_URL',
+            'http://127.0.0.1:8081'
+        ),
+        'enabled' => env('MAXIMIN_SERVICE_ENABLED', false),
+        'key' => env('IOP_API_KEY'),
+    ],
+
+    'markov' => [
+        'url' => env(
+            'MARKOV_SERVICE_URL',
+            'http://127.0.0.1:8082'
+            ),
+            'enabled' => env('MARKOV_SERVICE_ENABLED', false),
+            'key' => env('MARKOV_API_KEY'),
+        ],
+
+
 ];

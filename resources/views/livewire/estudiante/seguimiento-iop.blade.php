@@ -673,7 +673,10 @@
                                     {{ $transicion->estado_anterior }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    {{ $transicion->estado_siguiente }}
+                                    {{ \App\Support\EstadosIOP::nombre(
+    $transicion->estado_anterior
+) }}
+
                                 </td>
                                 <td class="px-4 py-3">
                                     {{ $transicion->calificacion_nueva }}

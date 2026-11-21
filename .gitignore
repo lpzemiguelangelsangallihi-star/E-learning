@@ -22,3 +22,15 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/database/seeders/ActividadAcademicaDemoSeeder.php
+/database/seeders/DemoCompletaSeeder.php
+/database/seeders/EvaluacionesRealizadasDemoSeeder.php
+
+# Spring Boot / Maven
+/microservices/**/target/
+/microservices/**/.classpath
+/microservices/**/.project
+/microservices/**/.settings/
+
+# Archivos de entorno de los microservicios
+/microservices/**/.env

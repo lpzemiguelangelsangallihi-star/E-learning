@@ -4,7 +4,7 @@
 >
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <x-ui.stat-card title="Progreso promedio" :value="$promedioProgreso . '%'" icon="fa-solid fa-chart-line" />
+        {{-- <x-ui.stat-card title="Progreso promedio" :value="$promedioProgreso . '%'" icon="fa-solid fa-chart-line" /> --}}
         <x-ui.stat-card title="Temas completados" :value="$lecciones" icon="fa-solid fa-circle-check" type="success" />
         <x-ui.stat-card title="Racha actual" :value="($racha->racha_actual ?? 0) . ' d'" icon="fa-solid fa-fire" type="warning"
             :description="'Mejor racha: ' . ($racha->mejor_racha ?? 0) . ' días'" />

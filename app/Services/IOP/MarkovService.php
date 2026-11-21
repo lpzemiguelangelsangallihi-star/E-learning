@@ -4,6 +4,8 @@ namespace App\Services\IOP;
 
 use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class MarkovService
 {
@@ -13,6 +15,9 @@ class MarkovService
         [0.05, 0.15, 0.50, 0.30],
         [0.00, 0.00, 0.00, 1.00],
     ];
+    public function __construct(
+        private MarkovApiClient $apiClient
+    ) {}
 
     /**
      * Verifica que P sea una matriz estocástica 4x4.
@@ -171,14 +176,51 @@ class MarkovService
 
     /**
      * Calcula an = a0 * P^n.
-     */
+         */
+
     public function proyectar(
         array $vectorInicial,
         array $matriz,
         int $ciclos
     ): array {
         $this->validarVector($vectorInicial);
+        $this->validarMatriz($matriz);
 
+        if ($ciclos < 0) {
+            throw new InvalidArgumentException(
+                'El número de ciclos no puede ser negativo.'
+            );
+        }
+
+        if (config('services.markov.enabled', false)) {
+            try {
+                $resultado = $this->apiClient->proyectar(
+                    $vectorInicial,
+                    $matriz,
+                    $ciclos
+                );
+
+                Log::info(
+                    'Markov proyectado mediante Spring Boot',
+                    [
+                        'ciclos' => $ciclos,
+                        'proyeccion' => $resultado,
+                    ]
+                );
+
+                return $resultado;
+
+            } catch (Throwable $e) {
+                Log::warning(
+                    'Fallo del microservicio Markov',
+                    [
+                        'error' => $e->getMessage(),
+                    ]
+                );
+            }
+        }
+
+        // Respaldo: algoritmo original PHP.
         $potencia = $this->potenciaMatriz(
             $matriz,
             $ciclos
@@ -195,6 +237,7 @@ class MarkovService
 
         return $resultado;
     }
+
     /**
      * Estima P utilizando las transiciones almacenadas.
      *
@@ -283,19 +326,55 @@ class MarkovService
         $probabilidades = [];
         $totales = [];
 
+        
+        // Estimación mediante Spring Boot.
+        if (config('services.markov.enabled', false)) {
+            try {
+                $estimacion = $this->apiClient->estimar(
+                    $conteos,
+                    $minimoObservaciones
+                );
+
+                Log::info(
+                    'Matriz Markov estimada mediante Spring Boot',
+                    [
+                        'origen' => $origen,
+                        'leccion_id' => $leccionId,
+                        'completa' => $estimacion['completa'],
+                    ]
+                );
+
+                return [
+                    'origen' => $origen,
+                    'leccion_id' => $leccionId,
+                    ...$estimacion,
+                ];
+
+            } catch (Throwable $e) {
+                Log::warning(
+                    'Fallo al estimar Markov mediante Spring Boot',
+                    [
+                        'error' => $e->getMessage(),
+                    ]
+                );
+            }
+        }
+
+        // Respaldo: cálculo original en PHP.
+        $probabilidades = [];
+        $totales = [];
+
         for ($i = 0; $i < 4; $i++) {
 
             $total = array_sum($conteos[$i]);
             $totales[] = $total;
 
-            // S4 es absorbente por definición del modelo.
+            // S4 es un estado absorbente.
             if ($i === 3) {
                 $probabilidades[] = [0.0, 0.0, 0.0, 1.0];
                 continue;
             }
 
-            // No inventar una distribución cuando
-            // faltan observaciones.
             if ($total < $minimoObservaciones) {
                 $probabilidades[] = null;
                 continue;
@@ -310,8 +389,6 @@ class MarkovService
             $probabilidades[] = $fila;
         }
 
-        // Para proyectar se necesitan las tres filas
-        // transitorias completamente estimadas.
         $completa = true;
 
         for ($i = 0; $i < 3; $i++) {
@@ -331,5 +408,4 @@ class MarkovService
             'minimo_observaciones' => $minimoObservaciones,
         ];
     }
-
 }

@@ -15,8 +15,8 @@
         <x-ui.stat-card title="Estudiantes activos" :value="$stats['students']" icon="fa-solid fa-user-graduate" />
         <x-ui.stat-card title="Inscripciones" :value="$stats['enrollments']" icon="fa-solid fa-clipboard-list" />
         <x-ui.stat-card title="Evaluaciones" :value="$stats['evaluations']" icon="fa-solid fa-file-circle-check" />
-        <x-ui.stat-card title="Progreso promedio" :value="$stats['averageProgress'] . '%'" icon="fa-solid fa-chart-line" type="success" />
-        <x-ui.stat-card title="Estudiantes completaron" :value="$stats['completedStudents']" icon="fa-solid fa-circle-check" type="success" />
+        {{-- <x-ui.stat-card title="Progreso promedio" :value="$stats['averageProgress'] . '%'" icon="fa-solid fa-chart-line" type="success" /> --}}
+        <x-ui.stat-card title="Estudiantes completaron los cursos" :value="$stats['completedStudents']" icon="fa-solid fa-circle-check" type="success" />
         <x-ui.stat-card title="En progreso" :value="$stats['inProgressStudents']" icon="fa-solid fa-spinner" type="warning" />
     </div>
 
