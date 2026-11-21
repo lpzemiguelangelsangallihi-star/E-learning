@@ -140,3 +140,26 @@ it('guarda la mejor nota cuando hay varios intentos', function () {
     expect(Calificacion::where('examen_id', $x->examen->id)->count())->toBe(1)
         ->and((float) Calificacion::where('examen_id', $x->examen->id)->first()->calificacion)->toBe(100.0);
 });
+
+
+it('descarga reportes en CSV y respeta la propiedad de cursos', function () {
+    $esc = evalEscenario();
+    $x = evalExamen($esc, ['intentos_permitidos' => 3]);
+    evalIntentoCompleto($esc, $x, $esc->estudiante, true);
+
+    foreach (\App\Http\Controllers\Professor\ReporteAcademicoController::TIPOS as $tipo) {
+        $r = $this->actingAs($esc->profesor)
+            ->get(route('professor.reports.export', ['tipo' => $tipo]));
+
+        $r->assertOk();
+        expect($r->headers->get('content-disposition'))->toContain('reporte_'.$tipo);
+    }
+
+    $this->get(route('professor.reports.export', ['tipo' => 'inexistente']))->assertNotFound();
+
+    // Otro profesor no puede descargar datos de un curso ajeno.
+    $otro = evalUsuario('profesor');
+    $this->actingAs($otro)
+        ->get(route('professor.reports.export', ['tipo' => 'examenes', 'curso' => $esc->curso->id]))
+        ->assertNotFound();
+});

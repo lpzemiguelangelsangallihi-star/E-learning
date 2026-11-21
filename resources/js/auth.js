@@ -169,7 +169,7 @@ const initAuthScene = () => {
         }
     });
 
-    /* ---------- Lámpara ---------- */
+    //LAMPARA//
     const lampToggle = scene.querySelector('[data-lamp-toggle]');
 
     if (lampToggle) {

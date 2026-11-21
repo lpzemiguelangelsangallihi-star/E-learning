@@ -43,6 +43,26 @@
         </div>
     </x-ui.card>
 
+    {{-- Descargas --}}
+    <x-ui.card>
+        <div class="mb-3">
+            <h3 class="text-sm font-semibold text-slate-800">Descargar reportes (CSV, abre en Excel)</h3>
+            <p class="text-xs text-slate-500">Se descargan con los filtros de curso y examen elegidos arriba.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            @foreach ([
+                'examenes' => 'Por examen', 'estudiantes' => 'Por estudiante', 'temas' => 'Por tema',
+                'tiempo' => 'En el tiempo', 'intentos' => 'Intentos', 'ranking' => 'Ranking',
+                'progreso' => 'Progreso de estudiantes', 'tareas' => 'Tareas y entregas',
+            ] as $clave => $nombre)
+                <a href="{{ route('professor.reports.export', ['tipo' => $clave, 'curso' => $cursoId ?: null, 'examen' => $examenId ?: null]) }}"
+                    class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#2563EB] hover:text-[#2563EB]">
+                    <i class="fa-solid fa-download"></i> {{ $nombre }}
+                </a>
+            @endforeach
+        </div>
+    </x-ui.card>
+
     {{-- Resumen --}}
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <x-ui.stat-card title="Intentos finalizados" :value="$resumen['intentos']" icon="fa-solid fa-file-pen" />

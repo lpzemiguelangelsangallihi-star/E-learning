@@ -218,4 +218,59 @@ class AcademicReportService
             ->selectRaw('i.id, i.numero_intento, i.fecha_fin, i.calificacion, e.titulo as examen, e.puntaje_maximo, c.titulo as curso')
             ->selectRaw("TRIM(CONCAT(u.nombre, ' ', COALESCE(u.apellido_paterno, ''), ' ', COALESCE(u.apellido_materno, ''))) as estudiante");
     }
+
+    /** Progreso de cada estudiante inscrito en los cursos del profesor. */
+    public function progresoEstudiantes(User $profesor, ?int $cursoId): Collection
+    {
+        return DB::table('inscripciones as ins')
+            ->join('cursos as c', 'c.id', '=', 'ins.curso_id')
+            ->join('users as u', 'u.id', '=', 'ins.estudiante_id')
+            ->leftJoin('progreso_cursos as p', function ($j) {
+                $j->on('p.curso_id', '=', 'ins.curso_id')->on('p.estudiante_id', '=', 'ins.estudiante_id');
+            })
+            ->where('c.profesor_id', $profesor->id)
+            ->when($cursoId, fn ($q) => $q->where('c.id', $cursoId))
+            ->orderBy('c.titulo')
+            ->orderBy('u.apellido_paterno')
+            ->orderBy('u.nombre')
+            ->selectRaw("c.titulo as curso, TRIM(CONCAT(u.nombre, ' ', COALESCE(u.apellido_paterno, ''), ' ', COALESCE(u.apellido_materno, ''))) as estudiante, u.email")
+            ->selectRaw('ins.estado as inscripcion, ins.fecha_inscripcion')
+            ->selectRaw("COALESCE(p.porcentaje, 0) as porcentaje, COALESCE(p.lecciones_completadas, 0) as lecciones_completadas, COALESCE(p.estado, 'no_iniciado') as progreso, p.fecha_finalizacion")
+            ->get();
+    }
+
+    /** Resumen de tareas: entregas, pendientes y promedio por tarea. */
+    public function tareas(User $profesor, ?int $cursoId): Collection
+    {
+        return DB::table('tareas as t')
+            ->join('lecciones as l', 'l.id', '=', 't.leccion_id')
+            ->join('modulos as m', 'm.id', '=', 'l.modulo_id')
+            ->join('cursos as c', 'c.id', '=', 'm.curso_id')
+            ->leftJoin('entregas as en', 'en.tarea_id', '=', 't.id')
+            ->where('c.profesor_id', $profesor->id)
+            ->when($cursoId, fn ($q) => $q->where('c.id', $cursoId))
+            ->groupBy('t.id', 't.titulo', 't.estado', 't.fecha_limite', 't.puntaje_maximo', 'c.id', 'c.titulo')
+            ->orderBy('c.titulo')
+            ->orderBy('t.titulo')
+            ->selectRaw('t.titulo as tarea, c.titulo as curso, t.estado, t.fecha_limite, t.puntaje_maximo')
+            ->selectRaw('COUNT(en.id) as entregas')
+            ->selectRaw("SUM(CASE WHEN en.estado = 'tarde' THEN 1 ELSE 0 END) as tarde")
+            ->selectRaw("SUM(CASE WHEN en.estado = 'calificada' THEN 1 ELSE 0 END) as calificadas")
+            ->selectRaw('(SELECT COUNT(*) FROM inscripciones i WHERE i.curso_id = c.id AND i.estado = ?) as inscritos', ['activo'])
+            ->selectRaw('AVG(en.calificacion / NULLIF(t.puntaje_maximo, 0) * 100) as promedio')
+            ->get();
+    }
+
+    /** Ranking de estudiantes por promedio de exámenes (posición 1 = mejor). */
+    public function ranking(User $profesor, ?int $cursoId, ?int $examenId): Collection
+    {
+        return $this->porEstudiante($profesor, $cursoId, $examenId)
+            ->sortByDesc(fn ($f) => (float) $f->promedio)
+            ->values()
+            ->map(function ($f, $i) {
+                $f->posicion = $i + 1;
+
+                return $f;
+            });
+    }
 }

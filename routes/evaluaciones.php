@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Professor\ExamController as ProfessorExamController;
+use App\Http\Controllers\Professor\ReporteAcademicoController;
 use App\Http\Controllers\Professor\TaskController as ProfessorTaskController;
 use App\Http\Controllers\Student\ExamController as StudentExamController;
 use App\Http\Controllers\Student\TaskController as StudentTaskController;
@@ -48,6 +49,7 @@ Route::middleware([
 
         // Reportes académicos (componente Livewire)
         Route::view('/reportes', 'professor.reports.index')->name('reports.index');
+        Route::get('/reportes/exportar/{tipo}', [ReporteAcademicoController::class, 'exportar'])->name('reports.export');
     });
 
 /* ---------------------------- ESTUDIANTE ---------------------------- */

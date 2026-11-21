@@ -103,7 +103,7 @@
                     @endphp
 
                     <a
-                        href="{{ route('professor.courses.edit', $curso) }}"
+                        href="{{ route('professor.courses.edit', ['curso' => $curso->ulid]) }}"
                         class="el-card el-card-lift flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-4"
                         style="--i: {{ $loop->index }}"
                     >
@@ -188,3 +188,4 @@
     </div>
 
 </x-professor-layout>
+
