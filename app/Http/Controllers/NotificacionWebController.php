@@ -45,16 +45,16 @@ class NotificacionWebController extends Controller
     }
 
     /** Marca como leída solo una notificación del estudiante autenticado. */
-    public function marcarLeida(Request $request, int $notificacion): RedirectResponse
+    public function marcarLeida(Request $request, Notificacion $notificacion): RedirectResponse
     {
         abort_unless($request->user()->rol?->nombre === 'estudiante', 403);
 
-        $registro = Notificacion::query()
-            ->whereKey($notificacion)
-            ->where('usuario_id', $request->user()->getAuthIdentifier())
-            ->firstOrFail();
+        abort_unless(
+            $notificacion->usuario_id === $request->user()->getAuthIdentifier(),
+            403
+        );
 
-        $registro->update(['leida' => true]);
+        $notificacion->update(['leida' => true]);
 
         return back()->with('success', 'Notificación marcada como leída.');
     }

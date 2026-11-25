@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\BitacoraController;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\RecommendationController;
 use App\Models\IopSeguimiento;
 use App\Models\Leccion;
+use App\Services\IOP\MatrizPersonalIOPService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -44,8 +46,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     ->name('notificaciones.')
     ->group(function () {
         Route::get('/', [NotificacionWebController::class, 'index'])->name('index');
-        Route::patch('/{notificacion}/leida', [NotificacionWebController::class, 'marcarLeida'])
-            ->whereNumber('notificacion')
+        Route::patch('/{notificacion:ulid}/leida', [NotificacionWebController::class, 'marcarLeida'])
             ->name('leida');
     });
 
@@ -119,10 +120,10 @@ Route::middleware([
         Route::get('/usuarios', [UserController::class, 'index'])->name('users.index');
         Route::get('/usuarios/crear', [UserController::class, 'create'])->name('users.create');
         Route::post('/usuarios', [UserController::class, 'store'])->name('users.store');
-        Route::get('/usuarios/{user}/editar', [UserController::class, 'edit'])->name('users.edit');
-        Route::put('/usuarios/{user}', [UserController::class, 'update'])->name('users.update');
-        Route::patch('/usuarios/{user}/estado', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
-        Route::delete('/usuarios/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/usuarios/{user:ulid}/editar', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/usuarios/{user:ulid}', [UserController::class, 'update'])->name('users.update');
+        Route::patch('/usuarios/{user:ulid}/estado', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::delete('/usuarios/{user:ulid}', [UserController::class, 'destroy'])->name('users.destroy');
 
         /*
         |--------------------------------------------------------------------------
@@ -144,6 +145,18 @@ Route::middleware([
             '/cursos/{curso:ulid}',
             [AdminCourseController::class, 'destroy']
         )->name('courses.destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Respaldos
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+        Route::post('/backups', [BackupController::class, 'store'])->name('backups.store');
+        Route::post('/backups/upload', [BackupController::class, 'upload'])->name('backups.upload');
+        Route::get('/backups/{backup}', [BackupController::class, 'show'])->name('backups.download');
+        Route::post('/backups/{backup}/restore', [BackupController::class, 'restore'])->name('backups.restore');
 
         /*
         |--------------------------------------------------------------------------
@@ -247,18 +260,17 @@ Route::middleware([
                     ])
                     ->firstOrFail();
 
-                
-$evidencia = app(
-    \App\Services\IOP\MatrizPersonalIOPService::class
-)->evidencia(
-    (int) $seguimiento->estudiante_id,
-    (int) $seguimiento->leccion_id
-);
+                $evidencia = app(
+                    MatrizPersonalIOPService::class
+                )->evidencia(
+                    (int) $seguimiento->estudiante_id,
+                    (int) $seguimiento->leccion_id
+                );
 
-return view('professor.iop.detalle-seguimiento', [
-    'seguimiento' => $seguimiento,
-    'evidencia' => $evidencia,
-]);
+                return view('professor.iop.detalle-seguimiento', [
+                    'seguimiento' => $seguimiento,
+                    'evidencia' => $evidencia,
+                ]);
 
             }
         )

@@ -117,13 +117,14 @@
             <h2 class="text-base font-bold text-slate-800">Accesos rápidos</h2>
             <p class="mb-6 mt-1 text-sm text-slate-500">Lo que más usas, a un clic.</p>
 
-            <div class="grid grid-cols-2 gap-3">
-                @foreach ([
-                    ['Usuarios', 'admin.users.index', 'fa-solid fa-users'],
-                    ['Cursos', 'admin.courses.index', 'fa-solid fa-book-open'],
-                    ['Bitácora', 'admin.bitacora.index', 'fa-solid fa-clipboard-list'],
-                    ['Ajustes', 'admin.settings.index', 'fa-solid fa-gear'],
-                ] as [$label, $ruta, $icono])
+                <div class="grid grid-cols-2 gap-3">
+                    @foreach ([
+                        ['Usuarios', 'admin.users.index', 'fa-solid fa-users'],
+                        ['Cursos', 'admin.courses.index', 'fa-solid fa-book-open'],
+                        ['Bitácora', 'admin.bitacora.index', 'fa-solid fa-clipboard-list'],
+                        ['Respaldos', 'admin.backups.index', 'fa-solid fa-database'],
+                        ['Ajustes', 'admin.settings.index', 'fa-solid fa-gear'],
+                    ] as [$label, $ruta, $icono])
                     <a
                         href="{{ route($ruta) }}"
                         class="el-quick flex flex-col items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-4 text-center text-sm font-semibold text-slate-700"

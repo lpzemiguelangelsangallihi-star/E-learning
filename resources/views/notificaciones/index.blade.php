@@ -70,7 +70,7 @@
                     </div>
 
                     @if (! $notificacion->leida)
-                        <form method="POST" action="{{ route('notificaciones.leida', $notificacion->id) }}">
+                        <form method="POST" action="{{ route('notificaciones.leida', $notificacion) }}">
                             @csrf
                             @method('PATCH')
                             <button
