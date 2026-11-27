@@ -22,6 +22,15 @@
 <x-ui.card hover class="h-full">
     <div class="flex h-full flex-col">
 
+        @if ($curso->imagen_url)
+            <img
+                src="{{ $curso->imagen_url }}"
+                alt="Portada de {{ $curso->titulo }}"
+                class="mb-4 h-36 w-full rounded-lg object-cover"
+                loading="lazy"
+            >
+        @endif
+
         <div class="mb-4 flex items-start justify-between gap-3">
             <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-[#2563EB]">
                 <i class="{{ $icon }}" aria-hidden="true"></i>

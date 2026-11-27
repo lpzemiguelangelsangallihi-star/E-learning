@@ -60,7 +60,27 @@ class DashboardController extends Controller
             ->where('estudiante_id', $estudianteId)
             ->value('experiencia_total');
 
+        // Tareas con fecha límite: alimentan el calendario y "Esta semana".
+        $conFecha = $pendientes
+            ->filter(fn (array $item) => $item['tipo'] === 'tarea' && $item['fecha_limite'] !== null)
+            ->values();
+
+        $eventos = $conFecha->map(fn (array $item) => [
+            'fecha' => $item['fecha_limite']->format('Y-m-d'),
+            'hora' => $item['fecha_limite']->format('H:i'),
+            'titulo' => $item['titulo'],
+            'curso' => $item['curso']?->titulo,
+            'vencida' => $item['vencida'],
+            'url' => route('student.evaluations.task.show', $item['ulid']),
+        ])->all();
+
+        $semana = $conFecha
+            ->filter(fn (array $item) => $item['fecha_limite']->lte(now()->addDays(7)->endOfDay()))
+            ->values();
+
         return view('student.dashboard', [
+            'eventos' => $eventos,
+            'semana' => $semana,
             'stats' => $stats,
             'continuar' => $continuar,
             'progresos' => $progresos,

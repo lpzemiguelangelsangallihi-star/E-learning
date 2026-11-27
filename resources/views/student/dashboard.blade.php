@@ -2,52 +2,41 @@
     title="Dashboard"
     description="Tu actividad y avance en un solo lugar."
 >
-    <div class="mb-6 rounded-xl bg-[#1E3A8A] p-6 text-white sm:p-8">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 class="text-2xl font-bold">
-                    Hola, {{ auth()->user()->nombre }}
-                </h2>
+    @php
+        $hora = now()->hour;
+        $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
+        $pend = $stats['pendientes'] ?? 0;
+    @endphp
 
-                <p class="mt-1 text-sm text-blue-100">
-                    @if (($stats['pendientes'] ?? 0) > 0)
-                        Tienes {{ $stats['pendientes'] }}
-                        {{ $stats['pendientes'] === 1 ? 'evaluación pendiente' : 'evaluaciones pendientes' }}.
-                    @else
-                        No tienes evaluaciones pendientes. ¡Buen trabajo!
-                    @endif
-                </p>
+    <x-dashboard.hero
+        class="mb-6"
+        :eyebrow="now()->translatedFormat('l d \d\e F')"
+        :title="$saludo . ', ' . auth()->user()->nombre"
+        :subtitle="$pend > 0
+            ? 'Tienes ' . $pend . ' ' . ($pend === 1 ? 'evaluación pendiente' : 'evaluaciones pendientes') . '.'
+            : 'No tienes evaluaciones pendientes. ¡Buen trabajo!'"
+        sabio="¡Un paso más y lo logras!"
+    >
+        <x-slot:actions>
+            <x-ui.button
+                :href="route('student.courses.index')"
+                icon="fa-solid fa-book-open"
+                class="el-shine !bg-white !text-[#1E3A8A] hover:!bg-blue-50"
+            >
+                Mis cursos
+            </x-ui.button>
+
+            <div class="dash-chip flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold">
+                <i class="fa-solid fa-fire text-[#EAB308]" aria-hidden="true"></i>
+                {{ $racha ?? 0 }} {{ ($racha ?? 0) === 1 ? 'día seguido' : 'días seguidos' }}
             </div>
 
-            <div class="flex gap-3">
-                <div class="rounded-lg bg-white/10 px-4 py-3 text-center">
-                    <p class="text-xl font-bold">
-                        <i
-                            class="fa-solid fa-fire mr-1 text-[#EAB308]"
-                            aria-hidden="true"
-                        ></i>
-                        {{ $racha ?? 0 }}
-                    </p>
-
-                    <p class="text-xs text-blue-100">
-                        {{ ($racha ?? 0) === 1 ? 'día seguido' : 'días seguidos' }}
-                    </p>
-                </div>
-
-                <div class="rounded-lg bg-white/10 px-4 py-3 text-center">
-                    <p class="text-xl font-bold">
-                        <i
-                            class="fa-solid fa-bolt mr-1 text-[#EAB308]"
-                            aria-hidden="true"
-                        ></i>
-                        {{ $experiencia ?? 0 }}
-                    </p>
-
-                    <p class="text-xs text-blue-100">XP</p>
-                </div>
+            <div class="dash-chip flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold">
+                <i class="fa-solid fa-bolt text-[#EAB308]" aria-hidden="true"></i>
+                {{ $experiencia ?? 0 }} XP
             </div>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-dashboard.hero>
 
     <x-ui.card class="mb-6">
         <h2 class="mb-3 text-base font-bold text-slate-800">
@@ -112,6 +101,60 @@
             :value="$stats['promedio'] ?? '—'"
             icon="fa-solid fa-star"
         />
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-2">
+            <x-student.calendar :eventos="$eventos" />
+        </div>
+
+        <x-ui.card>
+            <div class="mb-4">
+                <h2 class="text-base font-bold text-slate-800">Esta semana</h2>
+                <p class="mt-1 text-sm text-slate-500">Lo que vence en los próximos 7 días.</p>
+            </div>
+
+            <div class="space-y-3">
+                @forelse ($semana as $item)
+                    @php
+                        $f = $item['fecha_limite'];
+                        $etiqueta = $item['vencida']
+                            ? 'Vencida'
+                            : ($f->isToday() ? 'Hoy' : ($f->isTomorrow() ? 'Mañana' : $f->translatedFormat('D d M')));
+                    @endphp
+
+                    <a
+                        href="{{ route('student.evaluations.task.show', $item['ulid']) }}"
+                        @class([
+                            'block rounded-lg border p-3 transition hover:shadow-sm',
+                            'border-red-200 bg-red-50' => $item['vencida'],
+                            'border-amber-200 bg-amber-50' => !$item['vencida'] && $f->isToday(),
+                            'border-slate-200' => !$item['vencida'] && !$f->isToday(),
+                        ])
+                    >
+                        <div class="flex items-center justify-between gap-2">
+                            <span @class([
+                                'text-xs font-bold uppercase tracking-wide',
+                                'text-red-700' => $item['vencida'],
+                                'text-amber-700' => !$item['vencida'] && $f->isToday(),
+                                'text-slate-500' => !$item['vencida'] && !$f->isToday(),
+                            ])>{{ $etiqueta }}</span>
+
+                            <span class="text-xs text-slate-500">{{ $f->format('H:i') }}</span>
+                        </div>
+
+                        <p class="mt-1 text-sm font-semibold text-slate-800">{{ $item['titulo'] }}</p>
+                        <p class="text-xs text-slate-500">{{ $item['curso']?->titulo }}</p>
+                    </a>
+                @empty
+                    <x-ui.empty
+                        icon="fa-solid fa-calendar-check"
+                        title="Semana libre"
+                        text="No tienes entregas para los próximos 7 días."
+                    />
+                @endforelse
+            </div>
+        </x-ui.card>
     </div>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-3">

@@ -219,3 +219,6 @@ document.addEventListener(
     initializeAdminSidebar
 );
 import './animations';
+
+// Debe cargarse después de animations.css para poder refinar sus estilos
+import './shell';
