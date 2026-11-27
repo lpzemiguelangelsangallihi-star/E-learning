@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Professor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Curso;
+use App\Models\Tarea;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -77,11 +78,57 @@ $stats['completedStudents'] = $progressBase()
             ->get();
 
 
+        // Tareas con entregas que todavía no tienen nota (la más antigua primero).
+        $porCalificar = Tarea::query()
+            ->with('leccion.modulo.curso')
+            ->where('profesor_id', $profesorId)
+            ->withCount([
+                'entregas as por_calificar_count' => fn ($query) => $query
+                    ->whereIn('estado', ['entregada', 'tarde']),
+            ])
+            ->withMin([
+                'entregas as primera_entrega' => fn ($query) => $query
+                    ->whereIn('estado', ['entregada', 'tarde']),
+            ], 'fecha_entrega')
+            ->having('por_calificar_count', '>', 0)
+            ->orderBy('primera_entrega')
+            ->take(5)
+            ->get();
+
+        $totalPorCalificar = DB::table('entregas as e')
+            ->join('tareas as t', 't.id', '=', 'e.tarea_id')
+            ->where('t.profesor_id', $profesorId)
+            ->whereIn('e.estado', ['entregada', 'tarde'])
+            ->count();
+
+        // Próximos vencimientos de las tareas publicadas.
+        $proximas = Tarea::query()
+            ->with('leccion.modulo.curso')
+            ->where('profesor_id', $profesorId)
+            ->where('estado', 'publicada')
+            ->whereNotNull('fecha_limite')
+            ->where('fecha_limite', '>=', now())
+            ->withCount('entregas as entregadas_count')
+            ->orderBy('fecha_limite')
+            ->take(5)
+            ->get();
+
+        $matriculados = DB::table('inscripciones')
+            ->where('estado', 'activo')
+            ->whereIn('curso_id', $proximas->map(fn ($t) => $t->leccion?->modulo?->curso_id)->filter()->unique())
+            ->selectRaw('curso_id, COUNT(*) as total')
+            ->groupBy('curso_id')
+            ->pluck('total', 'curso_id');
+
         return view(
             'professor.dashboard',
             compact(
                 'stats',
-                'recentCourses'
+                'recentCourses',
+                'porCalificar',
+                'totalPorCalificar',
+                'proximas',
+                'matriculados'
             )
         );
     }

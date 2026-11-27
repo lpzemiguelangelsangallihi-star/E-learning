@@ -151,6 +151,13 @@ class CourseController extends Controller
                 'string',
             ],
 
+            'imagen' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp,gif',
+                'max:5120',
+            ],
+
         ]);
 
         $curso = Curso::create([
@@ -165,6 +172,10 @@ class CourseController extends Controller
                     : null,
 
             'estado' => 'borrador',
+
+            'imagen' => $request->hasFile('imagen')
+                ? $request->file('imagen')->store('cursos/portadas', 'public')
+                : null,
         ]);
 
         BitacoraService::registrar(
@@ -232,7 +243,29 @@ class CourseController extends Controller
                     'oculto',
                 ]),
             ],
+
+            'imagen' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp,gif',
+                'max:5120',
+            ],
+
+            'quitar_imagen' => [
+                'nullable',
+                'boolean',
+            ],
         ]);
+
+        $imagen = $curso->imagen;
+
+        if ($request->hasFile('imagen')) {
+            $this->files->delete($curso->imagen);
+            $imagen = $request->file('imagen')->store('cursos/portadas', 'public');
+        } elseif ($request->boolean('quitar_imagen')) {
+            $this->files->delete($curso->imagen);
+            $imagen = null;
+        }
 
         $curso->update([
             'materia_id' => $validated['materia_id'],
@@ -244,6 +277,8 @@ class CourseController extends Controller
                     : null,
 
             'estado' => $validated['estado'],
+
+            'imagen' => $imagen,
         ]);
 
         BitacoraService::registrar(

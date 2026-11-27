@@ -10,6 +10,7 @@
     method="POST"
     action="{{ $action }}"
     class="space-y-6"
+    enctype="multipart/form-data"
     data-loading-form
     data-loading-text="Guardando..."
 >
@@ -229,6 +230,101 @@
                         {{ $message }}
                     </p>
 
+                @enderror
+
+            </div>
+
+
+            {{-- Imagen de portada --}}
+            <div
+                class="md:col-span-2"
+                x-data="{
+                    preview: @js($curso?->imagen_url),
+                    quitar: false,
+                    elegir(e) {
+                        const f = e.target.files[0];
+                        if (!f) { return; }
+                        this.quitar = false;
+                        this.preview = URL.createObjectURL(f);
+                    },
+                    limpiar() {
+                        this.$refs.archivo.value = '';
+                        this.preview = null;
+                        this.quitar = true;
+                    }
+                }"
+            >
+
+                <label
+                    for="imagen"
+                    class="mb-2 block text-sm font-semibold text-slate-700"
+                >
+                    Imagen del curso
+                    <span class="font-normal text-slate-400">(opcional)</span>
+                </label>
+
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+
+                    <div
+                        class="
+                            flex h-32 w-full items-center justify-center
+                            overflow-hidden rounded-lg
+                            border border-dashed border-slate-300
+                            bg-slate-50 text-slate-400
+                            sm:w-56 sm:shrink-0
+                        "
+                    >
+                        <template x-if="preview">
+                            <img :src="preview" alt="Vista previa" class="h-full w-full object-cover">
+                        </template>
+
+                        <template x-if="!preview">
+                            <div class="text-center text-xs">
+                                <i class="fa-regular fa-image text-2xl"></i>
+                                <p class="mt-1">Sin imagen</p>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="flex-1">
+                        <input
+                            id="imagen"
+                            type="file"
+                            name="imagen"
+                            accept="image/png,image/jpeg,image/webp,image/gif"
+                            x-ref="archivo"
+                            @change="elegir($event)"
+                            class="
+                                block w-full text-sm text-slate-600
+                                file:mr-4 file:rounded-lg file:border-0
+                                file:bg-blue-50 file:px-4 file:py-2.5
+                                file:text-sm file:font-semibold file:text-[#2563EB]
+                                hover:file:bg-blue-100
+                            "
+                        >
+
+                        <p class="mt-2 text-xs text-slate-500">
+                            JPG, PNG, WEBP o GIF. Máximo 5 MB.
+                        </p>
+
+                        <input type="hidden" name="quitar_imagen" :value="quitar ? 1 : 0">
+
+                        <button
+                            type="button"
+                            x-show="preview"
+                            x-cloak
+                            @click="limpiar()"
+                            class="mt-2 text-xs font-semibold text-red-600 hover:text-red-700"
+                        >
+                            <i class="fa-solid fa-trash mr-1"></i>
+                            Quitar imagen
+                        </button>
+                    </div>
+
+                </div>
+
+                @error('imagen')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
 
             </div>

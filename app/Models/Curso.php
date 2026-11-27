@@ -75,6 +75,20 @@ class Curso extends Model
         return $codigo;
     }
 
+    /** URL pública de la portada del curso, o null si no tiene. */
+    public function getImagenUrlAttribute(): ?string
+    {
+        if (empty($this->imagen)) {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $this->imagen) === 1) {
+            return $this->imagen;
+        }
+
+        return asset('storage/'.ltrim($this->imagen, '/'));
+    }
+
     public function materia(): BelongsTo
     {
         return $this->belongsTo(Materia::class, 'materia_id');

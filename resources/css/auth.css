@@ -372,3 +372,18 @@ div:has(> input.auth-input:focus) > span { color: #93C5FD; }
         transition-duration: .01ms !important;
     }
 }
+
+
+/* ==========================================================================
+   Ojos de Sabio
+   animations.css dejaba los ojos cerrados con opacity: 0 y auth.css ocultaba
+   los abiertos al iniciar sesión, así que el búho se quedaba sin ojos.
+   Estas reglas (más específicas) mantienen siempre unos ojos visibles.
+   ========================================================================== */
+.auth-scene .eye-open { opacity: 1; }
+.auth-scene.is-happy .eye-open { display: none; }
+.auth-scene.is-happy .eye-closed { display: block; opacity: 1; }
+
+/* Búho del hero de los dashboards: siempre con los ojos abiertos */
+.dash-hero .auth-scene .eye-open { display: inline; opacity: 1; }
+.dash-hero .auth-scene .eye-closed { display: none; }
